@@ -1,12 +1,11 @@
-include AUTHORS COPYING COPYING.LESSER README TODO
+include AUTHORS LICENSE.txt README.md TODO
 include ez_setup.py
 
-recursive-include lib/etk/docking/icons *.png
+recursive-include etk_docking/icons *.png
 
-include doc/docking.gaphor
-recursive-include doc/reference *.py Makefile make.bat *.rst
-prune doc/reference/build
-prune doc/reference/source/conf.pyc
-recursive-include doc/platform *.html *.py
-recursive-include doc/examples *.py *.sav
+recursive-include docs/reference *.py Makefile make.bat *.rst
+prune docs/reference/build
+prune docs/reference/source/conf.pyc
+recursive-include docs/platform *.html *.py
+recursive-include docs/examples *.py *.sav
 
