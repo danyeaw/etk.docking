@@ -18,21 +18,50 @@
 
 from __future__ import division
 
-import gobject
-import gtk.gdk as gdk
+from builtins import range
+import gi
+
+gi.require_version("Gtk", "3.0")
+from gi.repository import Gdk, GObject
 
 
-class HslColor(gobject.GObject):
-    __gtype_name__ = 'EtkHslColor'
-    __gproperties__ = {'h': (float, 'h', 'h', 0.0, 1.0, 0.0, gobject.PARAM_READWRITE),
-                       's': (float, 's', 's', 0.0, 1.0, 0.0, gobject.PARAM_READWRITE),
-                       'l': (float, 'l', 'l', 0.0, 1.0, 0.0, gobject.PARAM_READWRITE),
-                       'red-float': (float, 'red-float', 'red-float', 0.0, 1.0, 0.0, gobject.PARAM_READABLE),
-                       'green-float': (float, 'green-float', 'green-float', 0.0, 1.0, 0.0, gobject.PARAM_READABLE),
-                       'blue-float': (float, 'blue-float', 'blue-float', 0.0, 1.0, 0.0, gobject.PARAM_READABLE)}
+class HslColor(GObject.GObject):
+    __gtype_name__ = "EtkHslColor"
+    __gproperties__ = {
+        "h": (float, "h", "h", 0.0, 1.0, 0.0, GObject.PARAM_READWRITE),
+        "s": (float, "s", "s", 0.0, 1.0, 0.0, GObject.PARAM_READWRITE),
+        "l": (float, "l", "l", 0.0, 1.0, 0.0, GObject.PARAM_READWRITE),
+        "red-float": (
+            float,
+            "red-float",
+            "red-float",
+            0.0,
+            1.0,
+            0.0,
+            GObject.PARAM_READABLE,
+        ),
+        "green-float": (
+            float,
+            "green-float",
+            "green-float",
+            0.0,
+            1.0,
+            0.0,
+            GObject.PARAM_READABLE,
+        ),
+        "blue-float": (
+            float,
+            "blue-float",
+            "blue-float",
+            0.0,
+            1.0,
+            0.0,
+            GObject.PARAM_READABLE,
+        ),
+    }
 
     def __init__(self, color):
-        gobject.GObject.__init__(self)
+        GObject.GObject.__init__(self)
 
         self._update_hsl(color)
         self._update_rgb()
@@ -41,25 +70,25 @@ class HslColor(gobject.GObject):
     # GObject
     ############################################################################
     def do_get_property(self, pspec):
-        if pspec.name == 'h':
+        if pspec.name == "h":
             return self.get_h()
-        elif pspec.name == 's':
+        elif pspec.name == "s":
             return self.get_s()
-        elif pspec.name == 'l':
+        elif pspec.name == "l":
             return self.get_l()
-        elif pspec.name == 'red-float':
+        elif pspec.name == "red-float":
             return self.get_red_float()
-        elif pspec.name == 'green-float':
+        elif pspec.name == "green-float":
             return self.get_green_float()
-        elif pspec.name == 'blue-float':
+        elif pspec.name == "blue-float":
             return self.get_blue_float()
 
     def do_set_property(self, pspec, value):
-        if pspec.name == 'h':
+        if pspec.name == "h":
             self.set_h(value)
-        elif pspec.name == 's':
+        elif pspec.name == "s":
             self.set_s(value)
-        elif pspec.name == 'l':
+        elif pspec.name == "l":
             self.set_l(value)
 
     def get_h(self):
@@ -111,13 +140,17 @@ class HslColor(gobject.GObject):
         return (self._red_float, self._green_float, self._blue_float)
 
     def get_rgb(self):
-        return (int(self._red_float * 65535), int(self._green_float * 65535), int(self._blue_float * 65535))
+        return (
+            int(self._red_float * 65535),
+            int(self._green_float * 65535),
+            int(self._blue_float * 65535),
+        )
 
     ############################################################################
     # HslColor
     ############################################################################
     def to_gdk_color(self):
-        return gdk.Color(*self.get_rgb_float())
+        return Gdk.Color(*self.get_rgb_float())
 
     def _update_hsl(self, color):
         r = color.red / float(65535)
@@ -166,12 +199,18 @@ class HslColor(gobject.GObject):
         self._h = self._h / 6.0
 
     def _update_rgb(self):
-        if self._h > 1: self._h = 1
-        if self._h < 0: self._h = 0
-        if self._s > 1: self._s = 1
-        if self._s < 0: self._s = 0
-        if self._l > 1: self._l = 1
-        if self._l < 0: self._l = 0
+        if self._h > 1:
+            self._h = 1
+        if self._h < 0:
+            self._h = 0
+        if self._s > 1:
+            self._s = 1
+        if self._s < 0:
+            self._s = 0
+        if self._l > 1:
+            self._l = 1
+        if self._l < 0:
+            self._l = 0
 
         if self._l == 0:
             self._red_float = self._green_float = self._blue_float = 0.0

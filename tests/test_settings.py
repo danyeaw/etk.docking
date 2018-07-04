@@ -2,25 +2,25 @@ import unittest
 
 from etk_docking.docksettings import DockSettings, DockSettingsDict
 
-class TestDockLayout(unittest.TestCase):
 
+class TestDockLayout(unittest.TestCase):
     def test_settings(self):
         settings = DockSettingsDict()
-        s = settings['gid']
+        s = settings["gid"]
         assert s.auto_remove is True
         assert s.can_float is True
         assert s.inherit_settings is True
 
         # On subsequent fetches, get the same settings.
-        assert s is settings['gid']
+        assert s is settings["gid"]
 
-        s2 = settings['other-gid']
+        s2 = settings["other-gid"]
         assert s2 is not settings
 
-        s3 = settings.get('other-gid')
+        s3 = settings.get("other-gid")
 
         assert s3 is s2
 
-        settings['other-gid'] = DockSettings()
+        settings["other-gid"] = DockSettings()
 
-        assert s2 is not settings['other-gid']
+        assert s2 is not settings["other-gid"]

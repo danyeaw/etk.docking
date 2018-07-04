@@ -18,40 +18,49 @@
 
 
 from __future__ import absolute_import
+from __future__ import print_function
 import logging
 import random
 
-import pygtk
-pygtk.require('2.0')
+import gi
 
-import gobject
-import gtk
-import gtk.gdk as gdk
-import pango
+gi.require_version("Gtk", "3.0")
+
+from gi.repository import GObject, Gtk, Pango
 
 try:
     import etk.docking
 except ImportError:
     # The lib directory is most likely not on PYTHONPATH, so add it here.
     import os, sys
-    sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', 'lib')))
+
+    sys.path.insert(
+        0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "lib"))
+    )
     del os, sys
 finally:
-    from etk.docking import DockLayout, DockFrame, DockPaned, \
-                            DockGroup, DockItem, dockstore, settings
+    from etk.docking import (
+        DockLayout,
+        DockFrame,
+        DockPaned,
+        DockGroup,
+        DockItem,
+        dockstore,
+        settings,
+    )
 
 
-class MainWindow(gtk.Window):
+class MainWindow(Gtk.Window):
     def __init__(self, docklayout=None, dockframe=None):
-        gtk.Window.__init__(self)
+        GObject.GObject.__init__(self)
 
         self.set_default_size(500, 150)
-        self.set_title('etk.docking demo')
+        self.set_title("etk.docking demo")
         self.set_border_width(4)
         self.file_counter = 1
         self.subwindows = []
 
-        vbox = gtk.VBox()
+        vbox = Gtk.VBox()
         vbox.set_spacing(4)
         self.add(vbox)
 
@@ -65,67 +74,66 @@ class MainWindow(gtk.Window):
             self.dockframe = DockFrame()
             self.dockframe.set_border_width(8)
             g = DockGroup()
-            g.set_name('main')
+            g.set_name("main")
             self.dockframe.add(g)
             self.docklayout = DockLayout()
             self.docklayout.add(self.dockframe)
 
-        settings['main'].auto_remove = False
-        settings['main'].can_float = True
-        settings['main'].inherit_settings = False
-        settings['main'].expand = False
-
+        settings["main"].auto_remove = False
+        settings["main"].can_float = True
+        settings["main"].inherit_settings = False
+        settings["main"].expand = False
 
         # To change default group behaviour:
-        #self.docklayout.settings[None].inherit_settings = False
+        # self.docklayout.settings[None].inherit_settings = False
 
-        vbox.pack_start(self.dockframe)
+        vbox.pack_start(self.dockframe, True, True, 0)
 
         def on_item_closed(layout, group, item):
             item.destroy()
-            print 'closed item:', item.title
+            print("closed item:", item.title)
 
-        self.docklayout.connect('item-closed', on_item_closed)
+        self.docklayout.connect("item-closed", on_item_closed)
 
         def on_item_selected(layout, group, item):
-            print 'Selected item:', item.title
+            print("Selected item:", item.title)
 
-        self.docklayout.connect('item-selected', on_item_selected)
+        self.docklayout.connect("item-selected", on_item_selected)
 
         ########################################################################
         # Testing Tools
         ########################################################################
-        adddibutton = gtk.Button('Create docked items')
-        adddibutton.child.set_ellipsize(pango.ELLIPSIZE_MIDDLE)
-        adddibutton.connect('clicked', self._on_add_di_button_clicked)
+        adddibutton = Gtk.Button("Create docked items")
+        adddibutton.get_child().set_ellipsize(Pango.EllipsizeMode.MIDDLE)
+        adddibutton.connect("clicked", self._on_add_di_button_clicked)
         vbox.pack_start(adddibutton, False, False)
 
-        orientationbutton = gtk.Button('Switch Orientation')
-        orientationbutton.child.set_ellipsize(pango.ELLIPSIZE_MIDDLE)
-        orientationbutton.connect('clicked', self._on_orientation_button_clicked)
+        orientationbutton = Gtk.Button("Switch Orientation")
+        orientationbutton.get_child().set_ellipsize(Pango.EllipsizeMode.MIDDLE)
+        orientationbutton.connect("clicked", self._on_orientation_button_clicked)
         vbox.pack_start(orientationbutton, False, False)
 
-        hbox = gtk.HBox()
+        hbox = Gtk.HBox()
 
-        savebutton = gtk.Button('Save layout')
-        savebutton.child.set_ellipsize(pango.ELLIPSIZE_MIDDLE)
-        savebutton.connect('clicked', self._on_save_button_clicked)
+        savebutton = Gtk.Button("Save layout")
+        savebutton.get_child().set_ellipsize(Pango.EllipsizeMode.MIDDLE)
+        savebutton.connect("clicked", self._on_save_button_clicked)
         hbox.pack_start(savebutton, True, True)
 
-        loadbutton = gtk.Button('Load layout')
-        loadbutton.child.set_ellipsize(pango.ELLIPSIZE_MIDDLE)
-        loadbutton.connect('clicked', self._on_load_button_clicked)
+        loadbutton = Gtk.Button("Load layout")
+        loadbutton.get_child().set_ellipsize(Pango.EllipsizeMode.MIDDLE)
+        loadbutton.connect("clicked", self._on_load_button_clicked)
         hbox.pack_start(loadbutton, True, True)
 
         vbox.pack_start(hbox, False, False)
 
         self.show_all()
 
-        #def on_has_toplevel_focus(window, pspec):
+        # def on_has_toplevel_focus(window, pspec):
         #    print 'Has toplevel focus', window, pspec
         #    print 'Focus widget is', window.get_focus()
 
-        #self.connect('notify::has-toplevel-focus', on_has_toplevel_focus)
+        # self.connect('notify::has-toplevel-focus', on_has_toplevel_focus)
 
     def _on_add_di_button_clicked(self, button):
         def add_dockitems(child):
@@ -141,10 +149,10 @@ class MainWindow(gtk.Window):
     def _on_orientation_button_clicked(self, button):
         def switch_orientation(paned):
             if isinstance(paned, DockPaned):
-                if paned.get_orientation() == gtk.ORIENTATION_HORIZONTAL:
-                    paned.set_orientation(gtk.ORIENTATION_VERTICAL)
+                if paned.get_orientation() == Gtk.Orientation.HORIZONTAL:
+                    paned.set_orientation(Gtk.Orientation.VERTICAL)
                 else:
-                    paned.set_orientation(gtk.ORIENTATION_HORIZONTAL)
+                    paned.set_orientation(Gtk.Orientation.HORIZONTAL)
 
                 for child in paned.get_children():
                     switch_orientation(child)
@@ -153,14 +161,14 @@ class MainWindow(gtk.Window):
         switch_orientation(paned)
 
     def _on_save_button_clicked(self, button):
-        file = 'demo.sav'
+        file = "demo.sav"
         s = dockstore.serialize(self.docklayout)
 
-        with open(file, 'w') as f:
+        with open(file, "w") as f:
             f.write(s)
 
     def _on_load_button_clicked(self, button):
-        file = 'demo.sav'
+        file = "demo.sav"
 
         with open(file) as f:
             s = f.read()
@@ -177,41 +185,55 @@ class MainWindow(gtk.Window):
 
     def _create_content(self, text=None):
         # Create a TextView and set some example text
-        scrolledwindow = gtk.ScrolledWindow()
-        scrolledwindow.set_policy(gtk.POLICY_AUTOMATIC, gtk.POLICY_AUTOMATIC)
-        textview = gtk.TextView()
+        scrolledwindow = Gtk.ScrolledWindow()
+        scrolledwindow.set_policy(Gtk.PolicyType.AUTOMATIC, Gtk.PolicyType.AUTOMATIC)
+        textview = Gtk.TextView()
         textview.get_buffer().set_text(text)
         scrolledwindow.add(textview)
         return scrolledwindow
 
     def _add_dockitems(self, dockgroup):
-        examples = [(gtk.STOCK_EXECUTE, 'calculator', '#!/usr/bin/env python\n\nprint \'Hello!\''),
-                    (gtk.STOCK_OPEN, 'Hi!', 'Hello!'),
-                    (gtk.STOCK_FILE, 'ABC', 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'),
-                    (gtk.STOCK_FIND, 'abc', 'abcdefghijklmnopqrstuvwxyz'),
-                    (gtk.STOCK_HARDDISK, 'browser', '0123456789'),
-                    (gtk.STOCK_HOME, 'today', '9876543210'),
-                    gtk.Notebook]
+        examples = [
+            (
+                Gtk.STOCK_EXECUTE,
+                "calculator",
+                "#!/usr/bin/env python\n\nprint 'Hello!'",
+            ),
+            (Gtk.STOCK_OPEN, "Hi!", "Hello!"),
+            (Gtk.STOCK_FILE, "ABC", "ABCDEFGHIJKLMNOPQRSTUVWXYZ"),
+            (Gtk.STOCK_FIND, "abc", "abcdefghijklmnopqrstuvwxyz"),
+            (Gtk.STOCK_HARDDISK, "browser", "0123456789"),
+            (Gtk.STOCK_HOME, "today", "9876543210"),
+            Gtk.Notebook,
+        ]
 
-        for i in [1]: #range(random.randrange(1, 10, 1)):
+        for i in [1]:  # range(random.randrange(1, 10, 1)):
             example = random.choice(examples)
 
-            if example is gtk.Notebook:
-                child = gtk.Notebook()
-                child.append_page(gtk.Button('Click me'),
-                                  gtk.Label('New %s' % self.file_counter))
-                stock_id = ''
-                tooltip_text = 'notebook'
+            if example is Gtk.Notebook:
+                child = Gtk.Notebook()
+                child.append_page(
+                    Gtk.Button("Click me"),
+                    Gtk.Label(label="New %s" % self.file_counter),
+                )
+                stock_id = ""
+                tooltip_text = "notebook"
             else:
                 stock_id, tooltip_text, text = example
                 child = self._create_content(text)
                 child.set_name(stock_id)
 
             # Create a DockItem and add our TextView
-            di = DockItem(title='New %s' % self.file_counter, title_tooltip_text=tooltip_text, stock_id=stock_id)
+            di = DockItem(
+                title="New %s" % self.file_counter,
+                title_tooltip_text=tooltip_text,
+                stock_id=stock_id,
+            )
+
             def on_close(item):
-                print 'close:', item
-            di.connect('close', on_close)
+                print("close:", item)
+
+            di.connect("close", on_close)
             di.add(child)
             di.show_all()
 
@@ -225,27 +247,30 @@ class MainWindow(gtk.Window):
 def quit(widget, event, mainloop):
     mainloop.quit()
 
+
 def main():
     # Initialize logging
-    logging.basicConfig(level=logging.DEBUG,
-                        format='%(asctime)s\t%(levelname)s\t%(name)s\t%(funcName)s\t%(message)s')
+    logging.basicConfig(
+        level=logging.DEBUG,
+        format="%(asctime)s\t%(levelname)s\t%(name)s\t%(funcName)s\t%(message)s",
+    )
 
     # Uncomment to enable log filtering
-    #for handler in logging.getLogger('').handlers:
+    # for handler in logging.getLogger('').handlers:
     #    handler.addFilter(logging.Filter('EtkDockPaned'))
 
     # Initialize mainloop
-    gobject.threads_init()
-    mainloop = gobject.MainLoop()
+    GObject.threads_init()
+    mainloop = GObject.MainLoop()
 
     # Initialize mainwindow
     mainwindow = MainWindow()
-    mainwindow.connect('delete-event', quit, mainloop)
+    mainwindow.connect("delete-event", quit, mainloop)
     mainwindow.show()
 
     # Run mainloop
     mainloop.run()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

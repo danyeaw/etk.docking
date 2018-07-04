@@ -18,7 +18,7 @@
 
 import unittest
 
-import gtk
+from gi.repository import Gtk
 from etk_docking import DockItem, DockGroup
 
 
@@ -38,10 +38,10 @@ class TestDockGroup(unittest.TestCase):
             item_removed_events.append(child)
 
         dockitem = DockItem()
-        dockitem.add(gtk.Button())
+        dockitem.add(Gtk.Button())
         dockgroup = DockGroup()
-        dockgroup.connect('remove', on_remove)
-        dockgroup.connect('item-removed', on_item_removed)
+        dockgroup.connect("remove", on_remove)
+        dockgroup.connect("item-removed", on_item_removed)
         dockgroup.add(dockitem)
         dockgroup.remove(dockitem)
 
@@ -64,8 +64,8 @@ class TestDockGroup(unittest.TestCase):
         dockitem1 = DockItem()
         dockitem2 = DockItem()
         dockgroup = DockGroup()
-        dockgroup.connect('add', on_add)
-        dockgroup.connect('item-added', on_item_added)
+        dockgroup.connect("add", on_add)
+        dockgroup.connect("item-added", on_item_added)
         dockgroup.add(dockitem1)
         dockgroup.insert_item(dockitem2)
 
@@ -92,14 +92,14 @@ class TestDockGroup(unittest.TestCase):
         dockgroup.destroy()
 
     def test_remove(self):
-        win = gtk.Window()
+        win = Gtk.Window()
         dockitem = DockItem()
         dockgroup = DockGroup()
         dockgroup.add(dockitem)
         win.add(dockgroup)
         win.show_all()
 
-        assert dockitem.flags() & gtk.REALIZED
+        assert dockitem.get_realized()
 
         dockgroup.remove(dockitem)
 
@@ -107,11 +107,11 @@ class TestDockGroup(unittest.TestCase):
 
         win.destroy()
 
-        assert not dockitem.flags() & gtk.REALIZED
-        assert not dockgroup.flags() & gtk.REALIZED
+        assert not dockitem.get_realized()
+        assert not dockgroup.get_realized()
 
     def test_item_destroy(self):
-        win = gtk.Window()
+        win = Gtk.Window()
         dockitem = DockItem()
         dockgroup = DockGroup()
         dockgroup.add(dockitem)
@@ -327,6 +327,7 @@ class TestDockGroup(unittest.TestCase):
         events = []
         item_in = []
         item_in_after = []
+
         def event_handler(self, w):
             events.append(w)
             item_in.append(w in self.items)
@@ -334,10 +335,9 @@ class TestDockGroup(unittest.TestCase):
         def event_handler_after(self, w):
             item_in_after.append(w in self.items)
 
-
         dockgroup = DockGroup()
-        dockgroup.connect('add', event_handler)
-        dockgroup.connect_after('add', event_handler_after)
+        dockgroup.connect("add", event_handler)
+        dockgroup.connect_after("add", event_handler_after)
 
         dockitem1 = DockItem()
         dockgroup.add(dockitem1)
@@ -360,7 +360,7 @@ class TestDockGroup(unittest.TestCase):
         dockgroup.add(dockitem2)
         dockgroup.add(dockitem3)
 
-        window = gtk.Window()
+        window = Gtk.Window()
         window.add(dockgroup)
         window.set_size_request(200, 200)
 
@@ -374,13 +374,13 @@ class TestDockGroup(unittest.TestCase):
         tab = dockgroup._tabs[0]
 
         item_closed = []
+
         def item_closed_handler(item):
             item_closed.append(item)
 
-        dockitem.connect('close', item_closed_handler)
+        dockitem.connect("close", item_closed_handler)
 
         # Simulate clicking the close button
-        tab.button.emit('clicked')
+        tab.button.emit("clicked")
 
         assert [dockitem] == item_closed
-

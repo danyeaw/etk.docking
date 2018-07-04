@@ -17,55 +17,62 @@
 
 
 from __future__ import absolute_import
+from builtins import hex
 from logging import getLogger
 
-import gobject
-import gtk
-import gtk.gdk as gdk
+import gi
+
+gi.require_version("Gtk", "3.0")
+from gi.repository import Gtk, Gdk, GObject
 
 
-class DockItem(gtk.Bin):
-    __gtype_name__ = 'EtkDockItem'
-    __gproperties__ = {'title':
-                           (gobject.TYPE_STRING,
-                            'Title',
-                            'The title for the DockItem.',
-                            '',
-                            gobject.PARAM_READWRITE),
-                       'title-tooltip-text':
-                           (gobject.TYPE_STRING,
-                            'Title tooltip text',
-                            'The tooltip text for the title.',
-                            '',
-                            gobject.PARAM_READWRITE),
-                        'icon-name':
-                           (gobject.TYPE_STRING,
-                            'Icon name',
-                            'The name of the icon from the icon theme.',
-                            '',
-                            gobject.PARAM_READWRITE),
-                        'stock':
-                           (gobject.TYPE_STRING,
-                            'Stock',
-                            'Stock ID for a stock image to display.',
-                            '',
-                            gobject.PARAM_READWRITE),
-                        'image':
-                           (gobject.TYPE_PYOBJECT,
-                            'Image',
-                            'The image constructed from the specified stock ID or icon-name. Default value is gtk.STOCK_MISSING_IMAGE.',
-                            gobject.PARAM_READABLE)}
-    __gsignals__ = {'close':
-                        (gobject.SIGNAL_RUN_LAST,
-                         gobject.TYPE_NONE, ())}
+class DockItem(Gtk.Bin):
+    # __gtype_name__ = "EtkDockItem"
+    __gproperties__ = {
+        "title": (
+            GObject.TYPE_STRING,
+            "Title",
+            "The title for the DockItem.",
+            "",
+            GObject.PARAM_READWRITE,
+        ),
+        "title-tooltip-text": (
+            GObject.TYPE_STRING,
+            "Title tooltip text",
+            "The tooltip text for the title.",
+            "",
+            GObject.PARAM_READWRITE,
+        ),
+        "icon-name": (
+            GObject.TYPE_STRING,
+            "Icon name",
+            "The name of the icon from the icon theme.",
+            "",
+            GObject.PARAM_READWRITE,
+        ),
+        "stock": (
+            GObject.TYPE_STRING,
+            "Stock",
+            "Stock ID for a stock image to display.",
+            "",
+            GObject.PARAM_READWRITE,
+        ),
+        "image": (
+            GObject.TYPE_PYOBJECT,
+            "Image",
+            "The image constructed from the specified stock ID or icon-name. Default value is Gtk.STOCK_MISSING_IMAGE.",
+            GObject.PARAM_READABLE,
+        ),
+    }
+    __gsignals__ = {"close": (GObject.SignalFlags.RUN_LAST, None, ())}
 
-    def __init__(self, title='', title_tooltip_text='', icon_name=None, stock_id=None):
-        gtk.Bin.__init__(self)
-        self.set_flags(self.flags() | gtk.NO_WINDOW)
+    def __init__(self, title="", title_tooltip_text="", icon_name=None, stock_id=None):
+        GObject.GObject.__init__(self)
+        self.set_flags(self.flags() | Gtk.NO_WINDOW)
         self.set_redraw_on_allocate(False)
 
         # Initialize logging
-        self.log = getLogger('%s.%s' % (self.__gtype_name__, hex(id(self))))
+        self.log = getLogger("%s.%s" % (self.__gtype_name__, hex(id(self))))
 
         # Internal housekeeping
         self._icon_name = icon_name
@@ -80,25 +87,25 @@ class DockItem(gtk.Bin):
     # GObject
     ############################################################################
     def do_get_property(self, pspec):
-        if pspec.name == 'title':
+        if pspec.name == "title":
             return self.get_title()
-        elif pspec.name == 'title-tooltip-text':
+        elif pspec.name == "title-tooltip-text":
             return self.get_title_tooltip_text()
-        elif pspec.name == 'icon-name':
+        elif pspec.name == "icon-name":
             return self.get_icon_name()
-        elif pspec.name == 'stock':
+        elif pspec.name == "stock":
             return self.get_stock()
-        elif pspec.name == 'image':
+        elif pspec.name == "image":
             return self.get_image()
 
     def do_set_property(self, pspec, value):
-        if pspec.name == 'title':
+        if pspec.name == "title":
             self.set_title(value)
-        elif pspec.name == 'title-tooltip-text':
+        elif pspec.name == "title-tooltip-text":
             self.set_title_tooltip_text(value)
-        elif pspec.name == 'icon-name':
+        elif pspec.name == "icon-name":
             self.set_icon_name(value)
-        elif pspec.name == 'stock':
+        elif pspec.name == "stock":
             self.set_stock(value)
 
     def get_title(self):
@@ -106,36 +113,36 @@ class DockItem(gtk.Bin):
 
     def set_title(self, text):
         self._title = text
-        self.notify('title')
+        self.notify("title")
 
     def get_title_tooltip_text(self):
         return self._title_tooltip_text
 
     def set_title_tooltip_text(self, text):
         self._title_tooltip_text = text
-        self.notify('title-tooltip-text')
+        self.notify("title-tooltip-text")
 
     def get_icon_name(self):
         return self._icon_name
 
     def set_icon_name(self, icon_name):
         self._icon_name = icon_name
-        self.notify('icon-name')
+        self.notify("icon-name")
 
     def get_stock(self):
         return self._stock_id
 
     def set_stock(self, stock_id):
         self._stock_id = stock_id
-        self.notify('stock')
+        self.notify("stock")
 
     def get_image(self):
         if self._icon_name:
-            return gtk.image_new_from_icon_name(self._icon_name, gtk.ICON_SIZE_MENU)
+            return Gtk.Image.new_from_icon_name(self._icon_name, Gtk.IconSize.MENU)
         elif self._stock_id:
-            return gtk.image_new_from_stock(self._stock_id, gtk.ICON_SIZE_MENU)
+            return Gtk.Image.new_from_stock(self._stock_id, Gtk.IconSize.MENU)
         else:
-            return gtk.Image()
+            return Gtk.Image()
 
     title = property(get_title, set_title)
     title_tooltip_text = property(get_title_tooltip_text, set_title_tooltip_text)
@@ -149,21 +156,21 @@ class DockItem(gtk.Bin):
         requisition.width = 0
         requisition.height = 0
 
-        if self.child and self.child.flags() & gtk.VISIBLE:
-            (requisition.width, requisition.height) = self.child.size_request()
+        if self.get_child() and self.get_child().flags() & Gtk.VISIBLE:
+            (requisition.width, requisition.height) = self.get_child().size_request()
             requisition.width += self.border_width * 2
             requisition.height += self.border_width * 2
 
     def do_size_allocate(self, allocation):
         self.allocation = allocation
 
-        if self.child and self.child.flags() & gtk.VISIBLE:
-            child_allocation = gdk.Rectangle()
+        if self.get_child() and self.get_child().flags() & Gtk.VISIBLE:
+            child_allocation = ()
             child_allocation.x = allocation.x + self.border_width
             child_allocation.y = allocation.y + self.border_width
             child_allocation.width = allocation.width - (2 * self.border_width)
             child_allocation.height = allocation.height - (2 * self.border_width)
-            self.child.size_allocate(child_allocation)
+            self.get_child().size_allocate(child_allocation)
 
     ############################################################################
     # DockItem
@@ -174,4 +181,4 @@ class DockItem(gtk.Bin):
             group.remove(self)
 
     def close(self):
-        self.emit('close')
+        self.emit("close")

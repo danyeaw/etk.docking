@@ -1,9 +1,11 @@
+from __future__ import print_function
 
-import pygtk
-pygtk.require('2.0')
+import gi
+
+gi.require_version("Gtk", "3.0")
 
 from freshen import Before, After, AfterStep, Given, When, Then, scc as world
-import gtk
+from gi.repository import Gtk
 from etk.docking import DockPaned, DockGroup, DockLayout, DockFrame, DockItem
 from etk.docking.dnd import DRAG_TARGET_ITEM_LIST, DockDragContext
 from etk.docking.docklayout import drag_motion, drag_end, drag_failed
@@ -11,7 +13,7 @@ from etk.docking.docklayout import drag_motion, drag_end, drag_failed
 
 class StubContext(object):
     def __init__(self, source_widget, items):
-        self.targets = [ DRAG_TARGET_ITEM_LIST[0] ]
+        self.targets = [DRAG_TARGET_ITEM_LIST[0]]
         self.source_widget = source_widget
         # Set up dragcontext (nornally done in motion_notify event)
 
@@ -24,18 +26,18 @@ class StubContext(object):
 
     def finish(self, success, delete, timestamp):
         self.finished = (success, delete)
-    
+
     docklayout = property(lambda s: world.layout)
 
 
 @After
 def tear_down(_):
     world.window.destroy()
- 
 
-@Given('a window with (\d+) dockgroups?')
+
+@Given("a window with (\d+) dockgroups?")
 def default_window(n_groups):
-    world.window = gtk.Window(gtk.WINDOW_TOPLEVEL)
+    world.window = Gtk.Window(Gtk.WindowType.TOPLEVEL)
     world.window.set_default_size(800, 150)
     world.frame = DockFrame()
     world.window.add(world.frame)
@@ -54,33 +56,33 @@ def default_window(n_groups):
         world.groups.append(group)
 
 
-@Given('(one|another) containing (\d+) items')
+@Given("(one|another) containing (\d+) items")
 def setup_items(one_other, n_items):
-    if one_other == 'one':
+    if one_other == "one":
         index = 0
     else:
         index = world.item_index + 1
     for n in range(int(n_items)):
-        button = gtk.Button()
-        item = DockItem(icon_name='file', title='Item %s' % n, title_tooltip_text='')
+        button = Gtk.Button()
+        item = DockItem(icon_name="file", title="Item %s" % n, title_tooltip_text="")
         item.add(button)
         item.show()
         world.groups[index].add(item)
     world.item_index = index
 
 
-@Given('start a main loop')
+@Given("start a main loop")
 def start_a_main_loop():
     world.window.show_all()
-    # simulate gtk.main()
-    while gtk.events_pending():
-       gtk.main_iteration()
+    # simulate Gtk.main()
+    while Gtk.events_pending():
+        Gtk.main_iteration()
 
 
 @Given('define dockgroup (\d+) as "([^"]+)"')
 def define_group_by_name(nth_group, name):
     group = world.groups[int(nth_group) - 1]
-    #print 'Define group', group, 'as', name
+    # print 'Define group', group, 'as', name
     setattr(world, name, group)
 
 
@@ -88,7 +90,7 @@ def define_group_by_name(nth_group, name):
 def define_item_by_name(nth_item, nth_group, name):
     group = world.groups[int(nth_group) - 1]
     item = group.get_children()[int(nth_item) - 1]
-    #print 'Define item', item, 'as', name
+    # print 'Define item', item, 'as', name
     setattr(world, name, (group, item))
 
 
@@ -99,12 +101,12 @@ def drag_item(name):
     group.dragcontext.source_x = 1
     group.dragcontext.source_y = 1
     group.dragcontext.source_button = 1
-    group.dragcontext.dragged_object = [ item ]
-    world.dragged_items = group, [ item ]
+    group.dragcontext.dragged_object = [item]
+    world.dragged_items = group, [item]
     group.do_drag_begin(context=None)
     assert item.get_parent() is None
-    #import time
-    #time.sleep(1000)
+    # import time
+    # time.sleep(1000)
 
 
 @When('I drag all items in group "([^"]+)"')
@@ -113,7 +115,7 @@ def drag_all_items_in_group(name):
     group.dragcontext.source_x = 1
     group.dragcontext.source_y = 1
     group.dragcontext.source_button = 1
-    group.dragcontext.dragged_object = [ item for item in group.items ]
+    group.dragcontext.dragged_object = [item for item in group.items]
     world.dragged_items = group, group.dragcontext.dragged_object
     group.do_drag_begin(context=None)
 
@@ -136,7 +138,7 @@ def drop_item(dest, x, y):
 
     drag_end(source_group, StubContext(source_group, items))
 
-    groups = world.layout.get_widgets('EtkDockGroup')
+    groups = world.layout.get_widgets("EtkDockGroup")
     world.new_groups = list(set(groups).difference(world.groups))
     world.groups = groups
 
@@ -145,8 +147,8 @@ def drop_item(dest, x, y):
 def drop_item_on_content(name):
     dest_group = getattr(world, name)
 
-    a  = dest_group.allocation
-    
+    a = dest_group.allocation
+
     x, y = a.x + a.width / 2, a.y + a.height / 2
     drop_item(dest_group, x, y)
 
@@ -154,7 +156,7 @@ def drop_item_on_content(name):
 @When('I drop it on tab "([^"]+)" in group "([^"]+)"')
 def drop_item_on_tab(tabname, groupname):
     dest_group = getattr(world, groupname)
-    dg2, item = getattr(world, tabname) 
+    dg2, item = getattr(world, tabname)
 
     assert dg2 is dest_group
 
@@ -174,15 +176,15 @@ def drop_between_groups(group1name, group2name):
     # Test is restricted to two groups having the same DockPaned as parent
     assert paned is group2.get_parent()
 
-    index = [i.child for i in paned._items].index(group1)
-    assert index == [i.child for i in paned._items].index(group2) - 1
+    index = [i.get_child() for i in paned._items].index(group1)
+    assert index == [i.get_child() for i in paned._items].index(group2) - 1
     handle = paned._handles[index]
 
     x, y = handle.area.x + handle.area.width / 2, handle.area.y + handle.area.height / 2
     drop_item(paned, x, y)
 
 
-@When('I drop it before the first group')
+@When("I drop it before the first group")
 def drop_before_first_group():
     first_group = world.groups[0]
     a = first_group.allocation
@@ -190,15 +192,15 @@ def drop_before_first_group():
     drop_item(first_group, x, y)
 
 
-@When('I drop it outside of the frame')
+@When("I drop it outside of the frame")
 def drop_it_outside_of_the_frame():
     source_widget, items = world.dragged_items
     drag_failed(source_widget, StubContext(source_widget, items), 1)
-    world.new_frame = world.layout.get_floating_frames().next()
+    world.new_frame = next(world.layout.get_floating_frames())
 
 
 @Then('item "([^"]+)" is part of "([^"]+)"')
-#@Then('item "(drag-me)" is part of "(to-group)"')
+# @Then('item "(drag-me)" is part of "(to-group)"')
 def then_tab_on_group(item_name, group_name):
     _, item = getattr(world, item_name)
     group = getattr(world, group_name)
@@ -212,7 +214,7 @@ def then_tab_not_on_group(item_name, group_name):
     assert item not in group.items
 
 
-@Then('it has the focus')
+@Then("it has the focus")
 def then_it_has_the_focus():
     assert len(world.dropped_items) == 1
     assert world.dropped_on_dest._current_tab.item is world.dropped_items[0]
@@ -224,18 +226,22 @@ def placed_before_tab(name):
     start_a_main_loop()
     assert len(world.dropped_items) == 1
     items = newgroup.visible_items
-    print 'it has been placed in just before', items.index(world.dropped_items[0]),
-    print items.index(item) 
+    print(
+        "it has been placed in just before",
+        items.index(world.dropped_items[0]),
+        end=" ",
+    )
+    print(items.index(item))
     assert items
     assert items.index(world.dropped_items[0]) == items.index(item) - 1
-    
 
-@Then('a new group should have been created')
+
+@Then("a new group should have been created")
 def then_new_group():
     assert len(world.new_groups) == 1
 
 
-@Then('it should contain the item')
+@Then("it should contain the item")
 def then_contains_item():
     items = world.new_groups[0].items
     assert set(world.dropped_items).issubset(items), (world.dropped_items, items)
@@ -247,17 +253,18 @@ def the_group_has_been_removed(group):
     assert group.get_parent() is None, group.get_parent()
 
 
-@Then('a floating window is created')
+@Then("a floating window is created")
 def new_window_is_created():
     assert len(list(world.layout.get_floating_frames())) == 1
 
 
-@Then('it contains a new group with the item')
+@Then("it contains a new group with the item")
 def contains_a_new_group_with_the_item():
     group, items = world.dragged_items
     assert len(items) == 1
 
     assert items[0].get_parent() is not group
     assert items[0].get_ancestor(DockFrame) is world.new_frame
+
 
 # vim:sw=4:et:ai

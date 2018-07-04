@@ -1,5 +1,7 @@
 # Install
 simplegeneric
+pycairo
+pygobject
 
 # Dev/Deployment
 sphinx

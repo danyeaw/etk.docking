@@ -18,8 +18,7 @@
 
 import unittest
 
-import gtk
-import gtk.gdk as gdk
+from gi.repository import Gtk, Gdk
 
 from etk_docking import DockPaned, DockGroup
 
@@ -36,28 +35,43 @@ class TestDockPaned(unittest.TestCase):
             notify_called = True
 
         dockpaned = DockPaned()
-        dockpaned.connect('notify::handle-size', _on_notify)
+        dockpaned.connect("notify::handle-size", _on_notify)
 
         notify_called = False
         dockpaned.set_handle_size(1)
-        self.assertEquals(dockpaned.get_handle_size(), 1,
-                          msg='get_handle_size method did not return expected value')
-        self.assertTrue(notify_called,
-                        msg='handle-size property change notification failed when using set_handle_size method')
+        self.assertEquals(
+            dockpaned.get_handle_size(),
+            1,
+            msg="get_handle_size method did not return expected value",
+        )
+        self.assertTrue(
+            notify_called,
+            msg="handle-size property change notification failed when using set_handle_size method",
+        )
 
         notify_called = False
-        dockpaned.set_property('handle-size', 2)
-        self.assertEquals(dockpaned.get_property('handle-size'), 2,
-                          msg='get_property method did not return expected value')
-        self.assertTrue(notify_called,
-                        msg='handle-size property change notification failed when using set_property method')
+        dockpaned.set_property("handle-size", 2)
+        self.assertEquals(
+            dockpaned.get_property("handle-size"),
+            2,
+            msg="get_property method did not return expected value",
+        )
+        self.assertTrue(
+            notify_called,
+            msg="handle-size property change notification failed when using set_property method",
+        )
 
         notify_called = False
         dockpaned.props.handle_size = 3
-        self.assertEquals(dockpaned.props.handle_size, 3,
-                          msg='.props attribute did not return expected value')
-        self.assertTrue(notify_called,
-                        msg='handle-size property change notification failed when using .props attribute')
+        self.assertEquals(
+            dockpaned.props.handle_size,
+            3,
+            msg=".props attribute did not return expected value",
+        )
+        self.assertTrue(
+            notify_called,
+            msg="handle-size property change notification failed when using .props attribute",
+        )
 
         dockpaned.destroy()
 
@@ -69,28 +83,43 @@ class TestDockPaned(unittest.TestCase):
             notify_called = True
 
         dockpaned = DockPaned()
-        dockpaned.connect('notify::orientation', _on_notify)
+        dockpaned.connect("notify::orientation", _on_notify)
 
         notify_called = False
-        dockpaned.set_orientation(gtk.ORIENTATION_VERTICAL)
-        self.assertEquals(dockpaned.get_orientation(), gtk.ORIENTATION_VERTICAL,
-                          msg='get_orientation method did not return expected value')
-        self.assertTrue(notify_called,
-                        msg='orientation property change notification failed when using set_orientation method')
+        dockpaned.set_orientation(Gtk.Orientation.VERTICAL)
+        self.assertEquals(
+            dockpaned.get_orientation(),
+            Gtk.Orientation.VERTICAL,
+            msg="get_orientation method did not return expected value",
+        )
+        self.assertTrue(
+            notify_called,
+            msg="orientation property change notification failed when using set_orientation method",
+        )
 
         notify_called = False
-        dockpaned.set_property('orientation', gtk.ORIENTATION_HORIZONTAL)
-        self.assertEquals(dockpaned.get_property('orientation'), gtk.ORIENTATION_HORIZONTAL,
-                          msg='get_property method did not return expected value')
-        self.assertTrue(notify_called,
-                        msg='orientation property change notification failed when using set_property method')
+        dockpaned.set_property("orientation", Gtk.Orientation.HORIZONTAL)
+        self.assertEquals(
+            dockpaned.get_property("orientation"),
+            Gtk.Orientation.HORIZONTAL,
+            msg="get_property method did not return expected value",
+        )
+        self.assertTrue(
+            notify_called,
+            msg="orientation property change notification failed when using set_property method",
+        )
 
         notify_called = False
-        dockpaned.props.orientation = gtk.ORIENTATION_VERTICAL
-        self.assertEquals(dockpaned.props.orientation, gtk.ORIENTATION_VERTICAL,
-                          msg='.props attribute did not return expected value')
-        self.assertTrue(notify_called,
-                        msg='orientation property change notification failed when using .props attribute')
+        dockpaned.props.orientation = Gtk.Orientation.VERTICAL
+        self.assertEquals(
+            dockpaned.props.orientation,
+            Gtk.Orientation.VERTICAL,
+            msg=".props attribute did not return expected value",
+        )
+        self.assertTrue(
+            notify_called,
+            msg="orientation property change notification failed when using .props attribute",
+        )
 
         dockpaned.destroy()
 
@@ -106,13 +135,14 @@ class TestDockPaned(unittest.TestCase):
 
         dockpaned = DockPaned()
         dockgroup = DockGroup()
-        dockgroup.connect('child-notify::weight', _on_child_notify)
+        dockgroup.connect("child-notify::weight", _on_child_notify)
         dockpaned.add(dockgroup)
 
         child_notify_called = False
-        dockpaned.child_set_property(dockgroup, 'weight', 0.3)
-        self.assertTrue(child_notify_called,
-                        msg='weight child property change notification failed')
+        dockpaned.child_set_property(dockgroup, "weight", 0.3)
+        self.assertTrue(
+            child_notify_called, msg="weight child property change notification failed"
+        )
 
         dockgroup.destroy()
         dockpaned.destroy()
@@ -128,7 +158,7 @@ class TestDockPaned(unittest.TestCase):
 
         dockgroup = DockGroup()
         dockpaned = DockPaned()
-        dockpaned.connect('add', on_add)
+        dockpaned.connect("add", on_add)
         dockpaned.add(dockgroup)
 
         self.assertTrue(dockgroup in add_events)
@@ -148,8 +178,8 @@ class TestDockPaned(unittest.TestCase):
 
         dockgroup = DockGroup()
         dockpaned = DockPaned()
-        dockpaned.connect('remove', on_remove)
-        dockpaned.connect('item-removed', on_item_removed)
+        dockpaned.connect("remove", on_remove)
+        dockpaned.connect("item-removed", on_item_removed)
         dockpaned.add(dockgroup)
         dockpaned.remove(dockgroup)
 
@@ -172,8 +202,8 @@ class TestDockPaned(unittest.TestCase):
         dockgroup1 = DockGroup()
         dockgroup2 = DockGroup()
         dockpaned = DockPaned()
-        dockpaned.connect('add', on_add)
-        dockpaned.connect('item-added', on_item_added)
+        dockpaned.connect("add", on_add)
+        dockpaned.connect("item-added", on_item_added)
         dockpaned.add(dockgroup1)
         dockpaned.insert_item(dockgroup2)
 
@@ -199,8 +229,8 @@ class TestDockPaned(unittest.TestCase):
         dockgroup1 = DockGroup()
         dockgroup2 = DockGroup()
         dockpaned = DockPaned()
-        dockpaned.connect('remove', on_remove)
-        dockpaned.connect('item-removed', on_item_removed)
+        dockpaned.connect("remove", on_remove)
+        dockpaned.connect("item-removed", on_item_removed)
         dockpaned.add(dockgroup1)
         dockpaned.add(dockgroup2)
         dockpaned.remove(dockgroup1)
@@ -273,7 +303,6 @@ class TestDockPaned(unittest.TestCase):
         self.assertAlmostEquals(0.5, dockpaned._items[0].weight, 4)
         self.assertAlmostEquals(0.5, dockpaned._items[1].weight, 4)
 
-
     ############################################################################
     # Test public api
     ############################################################################
@@ -304,7 +333,7 @@ class TestDockPaned(unittest.TestCase):
         dockpaned.add(DockGroup())
         dockpaned.add(dg)
         dockpaned.add(DockGroup())
-        
+
         assert dg in dockpaned
         assert len(dockpaned) == 3
         assert dg is dockpaned[1]
@@ -447,15 +476,17 @@ class TestDockPaned(unittest.TestCase):
         dockpaned = DockPaned()
         dockpaned.add(dockgroup1)
         dockpaned.add(dockgroup2)
-        window = gtk.Window()
+        window = Gtk.Window()
         window.add(dockpaned)
         window.show_all()
 
-        child1 = dockpaned.get_item_at_pos(dockgroup1.allocation.x + 1,
-                                           dockgroup1.allocation.y + 1)
+        child1 = dockpaned.get_item_at_pos(
+            dockgroup1.allocation.x + 1, dockgroup1.allocation.y + 1
+        )
 
-        child2 = dockpaned.get_item_at_pos(dockgroup2.allocation.x + 1,
-                                           dockgroup2.allocation.y + 1)
+        child2 = dockpaned.get_item_at_pos(
+            dockgroup2.allocation.x + 1, dockgroup2.allocation.y + 1
+        )
 
         self.assertTrue(child1 is dockgroup1)
         self.assertTrue(child2 is dockgroup2)

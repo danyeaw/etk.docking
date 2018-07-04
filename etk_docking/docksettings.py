@@ -22,12 +22,16 @@ The configuration can be set for every element in the hierarchy. By default the 
 name can be used.
 """
 
+from builtins import str
+from builtins import object
+import gi
 
-import gtk
+gi.require_version("Gtk", "3.0")
+from gi.repository import Gtk
 
 
 class DockSettings(object):
-    '''
+    """
     Container for group specific settings.
     The following settings can be set:
 
@@ -36,15 +40,24 @@ class DockSettings(object):
     * expand: A group can expand/shrink on resize.
     * inherit_settings: new groups constructed from items dragged from a group should
     get the same group name.
-    '''
-    __slots__ = [ 'auto_remove',
-                  'can_float',
-                  'float_retain_size',
-                  'expand',
-                  'inherit_settings' ]
+    """
 
-    def __init__(self, auto_remove=True, can_float=True,
-                 float_retain_size=False, expand=True, inherit_settings=True):
+    __slots__ = [
+        "auto_remove",
+        "can_float",
+        "float_retain_size",
+        "expand",
+        "inherit_settings",
+    ]
+
+    def __init__(
+        self,
+        auto_remove=True,
+        can_float=True,
+        float_retain_size=False,
+        expand=True,
+        inherit_settings=True,
+    ):
         self.auto_remove = auto_remove
         self.can_float = can_float
         self.float_retain_size = float_retain_size
@@ -53,23 +66,23 @@ class DockSettings(object):
 
 
 class DockSettingsDict(object):
-    '''
+    """
     Settings container. Adheres partly to the dict protocol, only get() and setitem are
     supported.
 
     Settings can deal with widget names as well as widgets itself (in which case the
     name is requested). By overriding ``widget_name()`` it is possible to customize
     the behaviour for settings.
-    '''
+    """
 
     def __init__(self):
-        self._settings = {} # Map group-id -> layout settings
+        self._settings = {}  # Map group-id -> layout settings
 
     def get(self, target):
         return self[target]
 
     def widget_name(self, target):
-        if isinstance(target, gtk.Widget):
+        if isinstance(target, Gtk.Widget):
             return target.get_name()
         return str(target)
 
