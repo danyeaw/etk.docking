@@ -188,23 +188,24 @@ class CompactButton(Gtk.Widget):
     ############################################################################
     def do_realize(self):
         Gtk.Widget.do_realize(self)
-        self._input_window = Gdk.Window(
-            self.get_parent_window(),
-            x=self.allocation.x,
-            y=self.allocation.y,
-            width=self.allocation.width,
-            height=self.allocation.height,
-            window_type=Gdk.WINDOW_CHILD,
-            wclass=Gdk.INPUT_ONLY,
-            visual=self.get_visual(),
-            colormap=self.get_colormap(),
-            event_mask=(
-                Gdk.EventMask.ENTER_NOTIFY_MASK
-                | Gdk.EventMask.LEAVE_NOTIFY_MASK
-                | Gdk.EventMask.BUTTON_PRESS_MASK
-                | Gdk.EventMask.BUTTON_RELEASE_MASK
-            ),
-        )
+        attribute = Gdk.WindowAttr()
+        attribute.x = self.get_allocation().x
+        attribute.y = self.get_allocation().y
+        attribute.width = self.get_allocation().width
+        attribute.height = self.get_allocation().height
+        attribute.window_type = Gdk.WindowType.CHILD
+        attribute.wclass = Gdk.WindowWindowClass.INPUT_OUTPUT
+        attribute.visual = self.get_visual()
+        attribute.colormap = self.get_colormap()
+        attribute.event_mask = Gdk.EventMask.EXPOSURE_MASK | \
+                               Gdk.EventMask.POINTER_MOTION_MASK | \
+                               Gdk.EventMask.BUTTON_PRESS_MASK | \
+                               Gdk.EventMask.BUTTON_RELEASE_MASK
+        attributes_mask = Gdk.WindowAttributesType.X | \
+                          Gdk.WindowAttributesType.Y | \
+                          Gdk.WindowAttributesType.WMCLASS | \
+                          Gdk.WindowAttributesType.VISUAL
+        self._input_window = Gdk.Window(self.get_parent_window(), attribute, attributes_mask)
         self._input_window.set_user_data(self)
         self._refresh_icons()
 

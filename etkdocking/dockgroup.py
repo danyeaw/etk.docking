@@ -90,7 +90,7 @@ class DockGroup(Gtk.Container):
     }
 
     def __init__(self):
-        GObject.GObject.__init__(self)
+        Gtk.Container.__init__(self)
 
         # Initialize logging
         self.log = getLogger("%s.%s" % (self.__gtype_name__, hex(id(self))))
@@ -135,22 +135,22 @@ class DockGroup(Gtk.Container):
     ############################################################################
     def do_realize(self):
         # Internal housekeeping
-        self.set_flags(self.get_realized())
-        self.window = Gdk.Window(
-            self.get_parent_window(),
-            x=self.get_allocation().x,
-            y=self.get_allocation().y,
-            width=self.get_allocation().width,
-            height=self.get_allocation().height,
-            window_type=Gdk.WINDOW_CHILD,
-            wclass=Gdk.INPUT_OUTPUT,
-            event_mask=(
-                Gdk.EventMask.EXPOSURE_MASK
-                | Gdk.EventMask.POINTER_MOTION_MASK
-                | Gdk.EventMask.BUTTON_PRESS_MASK
-                | Gdk.EventMask.BUTTON_RELEASE_MASK
-            ),
-        )
+        self.set_realized(True)
+        attribute = Gdk.WindowAttr()
+        attribute.x = self.get_allocation().x
+        attribute.y = self.get_allocation().y
+        attribute.width = self.get_allocation().width
+        attribute.height = self.get_allocation().height
+        attribute.window_type = Gdk.WindowType.CHILD
+        attribute.wclass = Gdk.WindowWindowClass.INPUT_OUTPUT
+        attribute.event_mask = Gdk.EventMask.EXPOSURE_MASK | \
+                               Gdk.EventMask.POINTER_MOTION_MASK | \
+                               Gdk.EventMask.BUTTON_PRESS_MASK | \
+                               Gdk.EventMask.BUTTON_RELEASE_MASK
+        attributes_mask = Gdk.WindowAttributesType.X | \
+                          Gdk.WindowAttributesType.Y | \
+                          Gdk.WindowAttributesType.WMCLASS
+        self.window = Gdk.Window(self.get_parent_window(), attribute, attributes_mask)
         self.window.set_user_data(self)
         self.style.attach(self.window)
         self.style.set_background(self.window, Gtk.StateType.NORMAL)
@@ -201,22 +201,22 @@ class DockGroup(Gtk.Container):
             (bw, bh) = tab.button.size_request()
 
             tab.area.width = (
-                self._frame_width
-                + self._spacing
-                + iw
-                + self._spacing
-                + lw
-                + self._spacing
-                + bw
-                + self._spacing
-                + self._frame_width
+                    self._frame_width
+                    + self._spacing
+                    + iw
+                    + self._spacing
+                    + lw
+                    + self._spacing
+                    + bw
+                    + self._spacing
+                    + self._frame_width
             )
             tab.area.height = (
-                self._frame_width
-                + self._spacing
-                + max(ih, lh, bh)
-                + self._spacing
-                + self._frame_width
+                    self._frame_width
+                    + self._spacing
+                    + max(ih, lh, bh)
+                    + self._spacing
+                    + self._frame_width
             )
 
             if tab == self._current_tab:
@@ -260,50 +260,49 @@ class DockGroup(Gtk.Container):
             self.window.move_resize(*allocation)
 
         # Allocate space for decoration buttons
-        max_w, max_h = self._max_button.get_child_requisition()
-        min_w, min_h = self._min_button.get_child_requisition()
-        list_w, list_h = self._list_button.get_child_requisition()
+        max_w, max_h = self._max_button.get_preferred_size()
+        min_size, natural_size = self._max_button.get_preferred_size()
+        max_w = natural_size.width
+        max_h = natural_size.height
+        min_size, natural_size = self._min_button.get_preferred_size()
+        min_w = natural_size.width
+        min_h = natural_size.height
+        min_size, natural_size = self._list_button.get_preferred_size()
+        list_w = natural_size.width
+        list_h = natural_size.height
         bh = max(list_h, min_h, max_h)
         by = self._frame_width + self._spacing
-        self._max_button.size_allocate(
-            (
-                allocation.width - self._frame_width - self._spacing - max_w,
-                by,
-                max_w,
-                bh,
-            )
-        )
-        self._min_button.size_allocate(
-            (
-                allocation.width - self._frame_width - self._spacing - max_w - min_w,
-                by,
-                min_w,
-                bh,
-            )
-        )
-        self._list_button.size_allocate(
-            (
+
+        rect = Gdk.Rectangle()
+        rect.height = allocation.width - self._frame_width - self._spacing - max_w
+        rect.width = by
+        rect.x = max_w
+        rect.y = bh
+        self._max_button.size_allocate(rect)
+
+        rect = Gdk.Rectangle()
+        rect.height = allocation.width - self._frame_width - self._spacing - max_w - min_w
+        rect.width = by
+        rect.x = min_w
+        rect.y = bh
+        self._min_button.size_allocate(rect)
+
+        rect = Gdk.Rectangle()
+        rect.height = allocation.width - self._frame_width - self._spacing - max_w - min_w - list_w
+        rect.width = by
+        rect.x = list_w
+        rect.y = bh
+        self._list_button.size_allocate(rect)
+
+        # Compute available tab area width
+        self._available_width = (
                 allocation.width
                 - self._frame_width
                 - self._spacing
                 - max_w
                 - min_w
-                - list_w,
-                by,
-                list_w,
-                bh,
-            )
-        )
-
-        # Compute available tab area width
-        self._available_width = (
-            allocation.width
-            - self._frame_width
-            - self._spacing
-            - max_w
-            - min_w
-            - list_w
-            - self._spacing
+                - list_w
+                - self._spacing
         )
 
         # Update visible tabs
@@ -350,14 +349,14 @@ class DockGroup(Gtk.Container):
 
             if len(self._visible_tabs) == 1:
                 lw = tab.area.width - (
-                    self._frame_width
-                    + self._spacing
-                    + iw
-                    + self._spacing
-                    + self._spacing
-                    + bw
-                    + self._spacing
-                    + self._frame_width
+                        self._frame_width
+                        + self._spacing
+                        + iw
+                        + self._spacing
+                        + self._spacing
+                        + bw
+                        + self._spacing
+                        + self._frame_width
                 )
                 lw = max(lw, 0)  # Prevent negative width
 
@@ -366,13 +365,13 @@ class DockGroup(Gtk.Container):
             tab.label.size_allocate((lx, ly, lw, lh))
 
             bx = (
-                cx
-                + self._frame_width
-                + self._spacing
-                + iw
-                + self._spacing
-                + lw
-                + self._spacing
+                    cx
+                    + self._frame_width
+                    + self._spacing
+                    + iw
+                    + self._spacing
+                    + lw
+                    + self._spacing
             )
             by = old_div((tab.area.height - bh), 2) + 1
             tab.button.size_allocate((bx, by, bw, bh))
@@ -583,14 +582,14 @@ class DockGroup(Gtk.Container):
         if event.window is self.window:
             # Check if we are actually starting a DnD operation
             if (
-                event.get_state() & Gdk.ModifierType.BUTTON1_MASK
-                and self.dragcontext.source_button == 1
-                and self.drag_check_threshold(
-                    int(self.dragcontext.source_x),
-                    int(self.dragcontext.source_y),
-                    int(event.x),
-                    int(event.y),
-                )
+                    event.get_state() & Gdk.ModifierType.BUTTON1_MASK
+                    and self.dragcontext.source_button == 1
+                    and self.drag_check_threshold(
+                int(self.dragcontext.source_x),
+                int(self.dragcontext.source_y),
+                int(event.x),
+                int(event.y),
+            )
             ):
                 self.log.debug("drag_begin")
                 self.dragcontext.dragging = True
@@ -820,7 +819,7 @@ class DockGroup(Gtk.Container):
                 calculated_width += tab.area.width
 
             if calculated_width < available_width and len(self._visible_tabs) < len(
-                self._tabs
+                    self._tabs
             ):
                 tab_age = sorted(
                     self._tabs, key=attrgetter("last_focused"), reverse=True
@@ -849,15 +848,15 @@ class DockGroup(Gtk.Container):
                 (bh, bw) = self._current_tab.button.get_child_requisition()
 
                 normal = (
-                    self._frame_width
-                    + self._spacing
-                    + iw
-                    + self._spacing
-                    + lw
-                    + self._spacing
-                    + bw
-                    + self._spacing
-                    + self._frame_width
+                        self._frame_width
+                        + self._spacing
+                        + iw
+                        + self._spacing
+                        + lw
+                        + self._spacing
+                        + bw
+                        + self._spacing
+                        + self._frame_width
                 )
 
                 if available_width <= normal:

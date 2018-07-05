@@ -162,13 +162,13 @@ class DockPaned(Gtk.Container):
         self.do_set_child_property = self.obj_set_child_property
 
     # TODO if this works, make merge request to PyGObject, copied from install_properties helper
-    @staticmethod
+    @classmethod
     def install_child_properties(cls):
         """
         Scans the given class for instances of Property and merges them into the
         classes __gchild_properties__ dict if it exists or adds it if not.
         """
-        gchild_properties = cls._asdict.get('__gchild_properties__', {})
+        gchild_properties = cls.__gchild_properties__
 
         props = []
         for name, prop in list(cls.__dict__.items()):
@@ -543,23 +543,23 @@ class DockPaned(Gtk.Container):
     ############################################################################
     def do_realize(self):
         # Internal housekeeping
-        self.set_flags(self.get_realized())
-        self.window = Gdk.Window(
-            self.get_parent_window(),
-            x=self.allocation.x,
-            y=self.allocation.y,
-            width=self.allocation.width,
-            height=self.allocation.height,
-            window_type=Gdk.WINDOW_CHILD,
-            wclass=Gdk.INPUT_OUTPUT,
-            event_mask=(
-                Gdk.EventMask.EXPOSURE_MASK
-                | Gdk.EventMask.LEAVE_NOTIFY_MASK
-                | Gdk.EventMask.BUTTON_PRESS_MASK
-                | Gdk.EventMask.BUTTON_RELEASE_MASK
-                | Gdk.EventMask.POINTER_MOTION_MASK
-            ),
-        )
+        self.set_realized(True)
+        attribute = Gdk.WindowAttr()
+        attribute.x = self.get_allocation().x
+        attribute.y = self.get_allocation().y
+        attribute.width = self.get_allocation().width
+        attribute.height = self.get_allocation().height
+        attribute.window_type = Gdk.WindowType.CHILD
+        attribute.wclass = Gdk.WindowWindowClass.INPUT_OUTPUT
+        attribute.event_mask = Gdk.EventMask.EXPOSURE_MASK | \
+                               Gdk.EventMask.LEAVE_NOTIFY_MASK | \
+                               Gdk.EventMask.BUTTON_PRESS_MASK | \
+                               Gdk.EventMask.BUTTON_RELEASE_MASK | \
+                               Gdk.EventMask.POINTER_MOTION_MASK
+        attributes_mask = Gdk.WindowAttributesType.X | \
+                          Gdk.WindowAttributesType.Y | \
+                          Gdk.WindowAttributesType.WMCLASS
+        self.window = Gdk.Window(self.get_parent_window(), attribute, attributes_mask)
         self.window.set_user_data(self)
         self.style.attach(self.window)
         self.style.set_background(self.window, Gtk.StateType.NORMAL)
@@ -974,7 +974,7 @@ class DockPaned(Gtk.Container):
 #     pspec.insert(0, name)
 # for child in DockPaned.get_children():
 #     DockPaned.set_child_property(child, "weight", 0.2)
-DockPaned.install_child_properties(DockPaned.__gchild_properties__)
+DockPaned.install_child_properties()
 
 def fair_scale(weight, wmpairs):
     """

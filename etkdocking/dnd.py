@@ -27,7 +27,7 @@ gi.require_version("Gtk", "3.0")
 from gi.repository import Gtk, Gdk, GObject
 
 
-DRAG_TARGET_ITEM_LIST = Gtk.TargetEntry("x-etk-docking/item-list", Gtk.TargetFlags.SAME_APP, 0)
+DRAG_TARGET_ITEM_LIST = Gtk.TargetEntry.new("x-etk-docking/item-list", Gtk.TargetFlags.SAME_APP, 0)
 
 
 class DockDragContext(object):
