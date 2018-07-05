@@ -6,9 +6,9 @@ gi.require_version("Gtk", "3.0")
 
 from freshen import Before, After, AfterStep, Given, When, Then, scc as world
 from gi.repository import Gtk
-from etk.docking import DockPaned, DockGroup, DockLayout, DockFrame, DockItem
-from etk.docking.dnd import DRAG_TARGET_ITEM_LIST, DockDragContext
-from etk.docking.docklayout import drag_motion, drag_end, drag_failed
+from etkdocking import DockPaned, DockGroup, DockLayout, DockFrame, DockItem
+from etkdocking.dnd import DRAG_TARGET_ITEM_LIST, DockDragContext
+from etkdocking.docklayout import drag_motion, drag_end, drag_failed
 
 
 class StubContext(object):

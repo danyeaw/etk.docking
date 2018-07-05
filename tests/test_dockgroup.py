@@ -1,25 +1,27 @@
-# Copyright © 2010 etk.docking Contributors
+# Copyright © 2010 etkdocking Contributors
 #
-# This file is part of etk.docking.
+# This file is part of etkdocking.
 #
-# etk.docking is free software: you can redistribute it and/or modify
+# etkdocking is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Lesser General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
 #
-# etk.docking is distributed in the hope that it will be useful,
+# etkdocking is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU Lesser General Public License for more details.
 #
 # You should have received a copy of the GNU Lesser General Public License
-# along with etk.docking. If not, see <http://www.gnu.org/licenses/>.
+# along with etkdocking. If not, see <http://www.gnu.org/licenses/>.
 
 
 import unittest
 
+import gi
+gi.require_version("Gtk", "3.0")
 from gi.repository import Gtk
-from etk_docking import DockItem, DockGroup
+from etkdocking import DockItem, DockGroup
 
 
 class TestDockGroup(unittest.TestCase):

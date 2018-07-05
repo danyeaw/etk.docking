@@ -1,28 +1,34 @@
-# Copyright © 2010 etk.docking Contributors
+# Copyright © 2010 etkdocking Contributors
 #
-# This file is part of etk.docking.
+# This file is part of etkdocking.
 #
-# etk.docking is free software: you can redistribute it and/or modify
+# etkdocking is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Lesser General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
 #
-# etk.docking is distributed in the hope that it will be useful,
+# etkdocking is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU Lesser General Public License for more details.
 #
 # You should have received a copy of the GNU Lesser General Public License
-# along with etk.docking. If not, see <http://www.gnu.org/licenses/>.
+# along with etkdocking. If not, see <http://www.gnu.org/licenses/>.
 
 
 from __future__ import print_function
+
+from builtins import map
+from builtins import object
 import unittest
 
+import gi
+gi.require_version("Gtk", "3.0")
 from gi.repository import Gtk
-from etk_docking import DockLayout, DockFrame, DockPaned, DockGroup, DockItem
-from etk_docking.dockgroup import DockGroup, DRAG_TARGET_ITEM_LIST
-from etk_docking.dnd import DockDragContext
+
+from etkdocking import DockLayout, DockFrame, DockPaned, DockItem, DockGroup
+from etkdocking.dockgroup import DRAG_TARGET_ITEM_LIST
+from etkdocking.dnd import DockDragContext
 
 
 class TestDockLayout(unittest.TestCase):
@@ -75,10 +81,10 @@ class TestDockLayout(unittest.TestCase):
         paned.remove(group)
 
         self.assertEquals(2, len(layout._signal_handlers), layout._signal_handlers)
-        assert frame in layout._signal_handlers.keys(), layout._signal_handlers
-        assert paned in layout._signal_handlers.keys(), layout._signal_handlers
-        assert group not in layout._signal_handlers.keys(), layout._signal_handlers
-        assert item not in layout._signal_handlers.keys(), layout._signal_handlers
+        assert frame in list(layout._signal_handlers.keys()), layout._signal_handlers
+        assert paned in list(layout._signal_handlers.keys()), layout._signal_handlers
+        assert group not in list(layout._signal_handlers.keys()), layout._signal_handlers
+        assert item not in list(layout._signal_handlers.keys()), layout._signal_handlers
         assert frame in layout.frames
 
     def test_get_widgets(self):
@@ -219,7 +225,7 @@ class TestDockLayoutDnD(unittest.TestCase):
 
         win.add(frame)
         frame.add(paned)
-        map(paned.add, groups)
+        list(map(paned.add, groups))
         groups[0].add(item)
 
         win.set_default_size(200, 200)
@@ -248,7 +254,7 @@ class TestDockLayoutDnD(unittest.TestCase):
 
         win.add(frame)
         frame.add(paned)
-        map(paned.add, groups)
+        list(map(paned.add, groups))
         # groups[0].add(item)
 
         win.set_default_size(200, 200)
@@ -317,7 +323,7 @@ class TestDockLayoutDnD(unittest.TestCase):
         assert not paneds[0].get_parent()
 
 
-from etk.docking import docklayout
+from etkdocking import docklayout
 
 
 class PlacementTest(unittest.TestCase):

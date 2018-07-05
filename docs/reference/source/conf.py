@@ -1,4 +1,4 @@
-# etk.docking documentation build configuration file, created by
+# etkdocking documentation build configuration file, created by
 # sphinx-quickstart on Thu Sep 23 17:46:41 2010.
 #
 # This file is execfile()d with the current directory set to its containing dir.
@@ -58,8 +58,8 @@ source_encoding = 'utf-8-sig'
 master_doc = 'index'
 
 # General information about the project.
-project = u'etk.docking'
-copyright = u'2010, etk.docking Contributors'
+project = u'etkdocking'
+copyright = u'2010, etkdocking Contributors'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -196,7 +196,7 @@ htmlhelp_basename = 'etkdockingdoc'
 # Grouping the document tree into LaTeX files. List of tuples
 # (source start file, target name, title, author, documentclass [howto/manual]).
 latex_documents = [
-  ('index', 'etkdocking.tex', u'etk.docking Documentation',
+  ('index', 'etkdocking.tex', u'etkdocking Documentation',
    u'etk.docing Contributors', 'manual'),
 ]
 
@@ -229,7 +229,7 @@ latex_documents = [
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
 man_pages = [
-    ('index', 'etkdocking', u'etk.docking Documentation',
+    ('index', 'etkdocking', u'etkdocking Documentation',
      [u'etk.docing Contributors'], 1)
 ]
 

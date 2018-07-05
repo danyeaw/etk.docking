@@ -1,19 +1,19 @@
-# Copyright © 2010 etk.docking Contributors
+# Copyright © 2010 etkdocking Contributors
 #
-# This file is part of etk.docking.
+# This file is part of etkdocking.
 #
-# etk.docking is free software: you can redistribute it and/or modify
+# etkdocking is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Lesser General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
 #
-# etk.docking is distributed in the hope that it will be useful,
+# etkdocking is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU Lesser General Public License for more details.
 #
 # You should have received a copy of the GNU Lesser General Public License
-# along with etk.docking. If not, see <http://www.gnu.org/licenses/>.
+# along with etkdocking. If not, see <http://www.gnu.org/licenses/>.
 
 
 from __future__ import absolute_import
@@ -52,7 +52,7 @@ class _DockGroupTab(object):
         # item title-tooltip-text property notification signal handler id
         "image",  # icon (Gtk.Image)
         "label",  # title (Gtk.Label)
-        "button",  # close button (etk.docking.CompactButton)
+        "button",  # close button (etkdocking.CompactButton)
         "menu_item",  # menu item (Gtk.ImageMenuItem)
         "area",  # area, used for hit testing ()
         "last_focused",
@@ -125,7 +125,7 @@ class DockGroup(Gtk.Container):
         self._tab_menu.attach_to_widget(self, None)
         self._list_menu = Gtk.Menu()
         self._list_menu.attach_to_widget(self._list_button, None)
-        Gtk.widget_pop_composite_child()
+        Gtk.Widget.pop_composite_child()
 
     def __len__(self):
         return len(self._tabs)
@@ -135,13 +135,13 @@ class DockGroup(Gtk.Container):
     ############################################################################
     def do_realize(self):
         # Internal housekeeping
-        self.set_flags(self.flags() | Gtk.REALIZED)
+        self.set_flags(self.get_realized())
         self.window = Gdk.Window(
             self.get_parent_window(),
-            x=self.allocation.x,
-            y=self.allocation.y,
-            width=self.allocation.width,
-            height=self.allocation.height,
+            x=self.get_allocation().x,
+            y=self.get_allocation().y,
+            width=self.get_allocation().width,
+            height=self.get_allocation().height,
             window_type=Gdk.WINDOW_CHILD,
             wclass=Gdk.INPUT_OUTPUT,
             event_mask=(
@@ -872,8 +872,8 @@ class DockGroup(Gtk.Container):
         """
         self._tab_state = tab_state
 
-        if self.allocation:
-            self.queue_draw_area(0, 0, self.allocation.width, self.allocation.height)
+        if self.get_allocation():
+            self.queue_draw_area(0, 0, self.get_allocation().width, self.get_allocation().height)
 
     def get_tab_state(self):
         """
@@ -944,13 +944,13 @@ class DockGroup(Gtk.Container):
             position = len(self)
 
         # Create composite children for tab
-        Gtk.widget_push_composite_child()
+        Gtk.Widget.push_composite_child()
         tab = _DockGroupTab()
         tab.image = item.get_image()
         tab.label = Gtk.Label()
         tab.button = CompactButton(has_frame=False)
         tab.menu_item = Gtk.ImageMenuItem()
-        Gtk.widget_pop_composite_child()
+        Gtk.Widget.pop_composite_child()
 
         # Configure child widgets for tab
         tab.item = item

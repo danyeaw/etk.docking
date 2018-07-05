@@ -1,19 +1,19 @@
-# Copyright © 2010 etk.docking Contributors
+# Copyright © 2010 etkdocking Contributors
 #
-# This file is part of etk.docking.
+# This file is part of etkdocking.
 #
-# etk.docking is free software: you can redistribute it and/or modify
+# etkdocking is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Lesser General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
 #
-# etk.docking is distributed in the hope that it will be useful,
+# etkdocking is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU Lesser General Public License for more details.
 #
 # You should have received a copy of the GNU Lesser General Public License
-# along with etk.docking. If not, see <http://www.gnu.org/licenses/>.
+# along with etkdocking. If not, see <http://www.gnu.org/licenses/>.
 
 
 from __future__ import absolute_import
@@ -74,7 +74,7 @@ class _DockPanedItem(object):
         self.min_size = None
 
     def __contains__(self, pos):
-        return rect_overlaps(self.get_child().allocation, *pos)
+        return rect_overlaps(self.child.get_allocation(), *pos)
 
 
 class DockPaned(Gtk.Container):
@@ -138,6 +138,29 @@ class DockPaned(Gtk.Container):
         "item-removed": (GObject.SignalFlags.RUN_LAST, None, (GObject.TYPE_OBJECT,)),
     }
 
+    def __init__(self):
+        Gtk.Container.__init__(self)
+
+        # Initialize logging
+        self.log = getLogger("%s.%s" % (self.__gtype_name__, hex(id(self))))
+
+        # Initialize attributes
+        self._items = []
+        self._handles = []
+        self._hcursor = None
+        self._vcursor = None
+
+        # Initialize handle dragging (not to be confused with DnD...)
+        self._dragcontext = DockDragContext()
+
+        # Initialize properties
+        self.set_handle_size(4)
+        self.set_orientation(Gtk.Orientation.HORIZONTAL)
+
+        # TODO add in to PyGObject
+        self.do_get_child_property = self.obj_get_child_property
+        self.do_set_child_property = self.obj_set_child_property
+
     # TODO if this works, make merge request to PyGObject, copied from install_properties helper
     @staticmethod
     def install_child_properties(cls):
@@ -145,10 +168,10 @@ class DockPaned(Gtk.Container):
         Scans the given class for instances of Property and merges them into the
         classes __gchild_properties__ dict if it exists or adds it if not.
         """
-        gchild_properties = cls.__dict__.get('__gchild_properties__', {})
+        gchild_properties = cls._asdict.get('__gchild_properties__', {})
 
         props = []
-        for name, prop in cls.__dict__.items():
+        for name, prop in list(cls.__dict__.items()):
             if isinstance(prop, propertyhelper.Property):  # not same as the built-in
                 # if a property was defined with a decorator, it may already have
                 # a name; if it was defined with an assignment (prop = Property(...))
@@ -187,29 +210,6 @@ class DockPaned(Gtk.Container):
         prop = getattr(cls, name, None)
         if prop:
             prop.fset(self, value)
-
-    def __init__(self):
-        GObject.GObject.__init__(self)
-
-        # Initialize logging
-        self.log = getLogger("%s.%s" % (self.__gtype_name__, hex(id(self))))
-
-        # Initialize attributes
-        self._items = []
-        self._handles = []
-        self._hcursor = None
-        self._vcursor = None
-
-        # Initialize handle dragging (not to be confused with DnD...)
-        self._dragcontext = DockDragContext()
-
-        # Initialize properties
-        self.set_handle_size(4)
-        self.set_orientation(Gtk.Orientation.HORIZONTAL)
-
-        # TODO add in to PyGObject
-        self.do_get_child_property = self.obj_get_child_property
-        self.do_set_child_property = self.obj_set_child_property
 
     ############################################################################
     # Private
@@ -257,11 +257,11 @@ class DockPaned(Gtk.Container):
 
         # Create new _DockPanedItem
         item = _DockPanedItem()
-        item.get_child = child
-        item.get_child().set_parent(self)
+        item.child = child
+        item.child.set_parent(self)
 
         if self.get_realized():
-            item.get_child().set_parent_window(self.window)
+            item.child.set_parent_window(self.window)
 
         self._items.insert(position, item)
 
@@ -277,12 +277,13 @@ class DockPaned(Gtk.Container):
         elif len(self._items) == 1:
             # First item always gets 100% allocated
             item.weight = 1.0
-        elif self.allocation and child.allocation:
-            size = self._effective_size(self.allocation) - self._handle_size
+        elif self.get_allocation() and child.get_allocation():
+            size = self._effective_size(self.get_allocation()) - self._handle_size
             if self._orientation == Gtk.Orientation.HORIZONTAL:
-                child_size = child.size_request()[0]
+                min, natural = child.get_preferred_width()
             else:
-                child_size = child.size_request()[1]
+                min, natural = child.get_preferred_height()
+            child_size = natural
 
             if size > 0 and child_size > 0:
                 item.weight_request = old_div(float(child_size), size)
@@ -456,13 +457,13 @@ class DockPaned(Gtk.Container):
         size = float(size)
 
         # Scale non-expandable items, so their size does not change effectively
-        if self.allocation:
-            f = old_div(self._effective_size(self.allocation), size)
+        if self.get_allocation():
+            f = old_div(self._effective_size(self.get_allocation()), size)
             for i in self._items:
                 # if i.weight and not i.expand and not i.weight_request:
                 if (
                     i.weight
-                    and not settings[i.get_child()].expand
+                    and not settings[i.child].expand
                     and not i.weight_request
                 ):
                     i.weight_request = i.weight * f
@@ -503,7 +504,7 @@ class DockPaned(Gtk.Container):
     ############################################################################
 
     def __getitem__(self, index):
-        return self._items[index].get_child()
+        return self._items[index].child
 
     def __delitem__(self, index):
         child = self[index]
@@ -514,13 +515,13 @@ class DockPaned(Gtk.Container):
 
     def __contains__(self, child):
         for i in self._items:
-            if i.get_child() is child:
+            if i.child is child:
                 return True
         return False
 
     def __iter__(self):
         for i in self._items:
-            yield i.get_child()
+            yield i.child
 
     ############################################################################
     # GObject
@@ -542,7 +543,7 @@ class DockPaned(Gtk.Container):
     ############################################################################
     def do_realize(self):
         # Internal housekeeping
-        self.set_flags(self.flags() | Gtk.REALIZED)
+        self.set_flags(self.get_realized())
         self.window = Gdk.Window(
             self.get_parent_window(),
             x=self.allocation.x,
@@ -568,8 +569,8 @@ class DockPaned(Gtk.Container):
             item.get_child().set_parent_window(self.window)
 
         # Initialize cursors
-        self._hcursor = Gdk.Cursor.new(self.get_display(), Gdk.SB_H_DOUBLE_ARROW)
-        self._vcursor = Gdk.Cursor.new(self.get_display(), Gdk.SB_V_DOUBLE_ARROW)
+        self._hcursor = Gdk.Cursor(display=self.get_display(), name="ew-resize")
+        self._vcursor = Gdk.Cursor(display=self.get_display(), name="ns-resize")
 
     def do_unrealize(self):
         self._hcursor = None
@@ -920,7 +921,7 @@ class DockPaned(Gtk.Container):
         the item range of the dockpaned this method returns :const:`None`.
         """
         if item_num >= 0 and item_num <= len(self) - 1:
-            return self._items[item_num].get_child()
+            return self._items[item_num].child
         else:
             return None
 
@@ -937,7 +938,7 @@ class DockPaned(Gtk.Container):
         """
         for item in self._items:
             if (x, y) in item:
-                return item.get_child()
+                return item.child
         else:
             return None
 
@@ -971,7 +972,9 @@ class DockPaned(Gtk.Container):
 # for index, (name, pspec) in enumerate(DockPaned.__gchild_properties__.items()):
 #     pspec = list(pspec)
 #     pspec.insert(0, name)
-DockPaned.install_child_properties(DockPaned)
+# for child in DockPaned.get_children():
+#     DockPaned.set_child_property(child, "weight", 0.2)
+DockPaned.install_child_properties(DockPaned.__gchild_properties__)
 
 def fair_scale(weight, wmpairs):
     """

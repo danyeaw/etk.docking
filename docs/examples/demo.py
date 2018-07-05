@@ -1,20 +1,20 @@
 #!/usr/bin/env python
-# Copyright © 2010 etk.docking Contributors
+# Copyright © 2010 etkdocking Contributors
 #
-# This file is part of etk.docking.
+# This file is part of etkdocking.
 #
-# etk.docking is free software: you can redistribute it and/or modify
+# etkdocking is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Lesser General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
 #
-# etk.docking is distributed in the hope that it will be useful,
+# etkdocking is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU Lesser General Public License for more details.
 #
 # You should have received a copy of the GNU Lesser General Public License
-# along with etk.docking. If not, see <http://www.gnu.org/licenses/>.
+# along with etkdocking. If not, see <http://www.gnu.org/licenses/>.
 
 
 from __future__ import absolute_import
@@ -28,26 +28,15 @@ gi.require_version("Gtk", "3.0")
 
 from gi.repository import GObject, Gtk, Pango
 
-try:
-    import etk.docking
-except ImportError:
-    # The lib directory is most likely not on PYTHONPATH, so add it here.
-    import os, sys
-
-    sys.path.insert(
-        0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "lib"))
-    )
-    del os, sys
-finally:
-    from etk.docking import (
-        DockLayout,
-        DockFrame,
-        DockPaned,
-        DockGroup,
-        DockItem,
-        dockstore,
-        settings,
-    )
+from etkdocking import (
+    DockLayout,
+    DockFrame,
+    DockPaned,
+    DockGroup,
+    DockItem,
+    dockstore,
+    settings,
+)
 
 
 class MainWindow(Gtk.Window):
@@ -55,7 +44,7 @@ class MainWindow(Gtk.Window):
         GObject.GObject.__init__(self)
 
         self.set_default_size(500, 150)
-        self.set_title("etk.docking demo")
+        self.set_title("etkdocking demo")
         self.set_border_width(4)
         self.file_counter = 1
         self.subwindows = []

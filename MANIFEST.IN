@@ -1,7 +1,7 @@
 include AUTHORS LICENSE.txt README.md TODO
 include ez_setup.py
 
-recursive-include etk_docking/icons *.png
+recursive-include etkdocking/icons *.png
 
 recursive-include docs/reference *.py Makefile make.bat *.rst
 prune docs/reference/build

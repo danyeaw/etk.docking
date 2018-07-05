@@ -19,7 +19,7 @@ To install use pip:
 
 Or clone the repo:
 
-    $ git clone https://github.com/dieterv/etk_docking.git
+    $ git clone https://github.com/dieterv/etkdocking.git
     $ python setup.py install
     
 Contributing

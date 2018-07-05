@@ -1,8 +1,14 @@
+from builtins import next
+from builtins import object
 import unittest
+
+import gi
+
+gi.require_version("Gtk", "3.0")
 from gi.repository import Gtk
 
-from etk_docking import DockLayout, DockFrame, DockPaned, DockGroup, DockItem
-from etk_docking.dockstore import serialize, deserialize, get_main_frames, finish
+from etkdocking import DockLayout, DockFrame, DockPaned, DockGroup, DockItem
+from etkdocking.dockstore import serialize, deserialize, get_main_frames, finish
 
 
 class ItemFactory(object):

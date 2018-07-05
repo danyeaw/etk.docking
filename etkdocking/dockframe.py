@@ -1,19 +1,19 @@
-# Copyright © 2010 etk.docking Contributors
+# Copyright © 2010 etkdocking Contributors
 #
-# This file is part of etk.docking.
+# This file is part of etkdocking.
 #
-# etk.docking is free software: you can redistribute it and/or modify
+# etkdocking is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Lesser General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
 #
-# etk.docking is distributed in the hope that it will be useful,
+# etkdocking is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU Lesser General Public License for more details.
 #
 # You should have received a copy of the GNU Lesser General Public License
-# along with etk.docking. If not, see <http://www.gnu.org/licenses/>.
+# along with etkdocking. If not, see <http://www.gnu.org/licenses/>.
 
 
 from __future__ import absolute_import
@@ -50,7 +50,7 @@ class DockFrame(Gtk.Bin):
         requisition.width = 0
         requisition.height = 0
 
-        if self.get_child() and self.get_child().flags() & Gtk.VISIBLE:
+        if self.get_child() and self.get_child().props.visible:
             (requisition.width, requisition.height) = self.get_child().size_request()
             requisition.width += self.border_width * 2
             requisition.height += self.border_width * 2
@@ -58,13 +58,13 @@ class DockFrame(Gtk.Bin):
     def do_size_allocate(self, allocation):
         self.allocation = allocation
 
-        if self.get_child() and self.get_child().flags() & Gtk.VISIBLE:
+        if self.get_child() and self.get_child().props.visible:
             child_allocation = ()
             child_allocation.x = allocation.x + self.border_width
             child_allocation.y = allocation.y + self.border_width
             child_allocation.width = allocation.width - (2 * self.border_width)
             child_allocation.height = allocation.height - (2 * self.border_width)
-            self.get_child().size_allocate(child_allocation)
+            self.child.size_allocate(child_allocation)
 
     ############################################################################
     # EtkDockFrame

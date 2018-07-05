@@ -1,20 +1,20 @@
 #!/usr/bin/env python
-# Copyright © 2010 etk.docking Contributors
+# Copyright © 2010 etkdocking Contributors
 #
-# This file is part of etk.docking.
+# This file is part of etkdocking.
 #
-# etk.docking is free software: you can redistribute it and/or modify
+# etkdocking is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Lesser General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
 #
-# etk.docking is distributed in the hope that it will be useful,
+# etkdocking is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU Lesser General Public License for more details.
 #
 # You should have received a copy of the GNU Lesser General Public License
-# along with etk.docking. If not, see <http://www.gnu.org/licenses/>.
+# along with etkdocking. If not, see <http://www.gnu.org/licenses/>.
 
 
 from __future__ import absolute_import
@@ -27,7 +27,7 @@ from gi.repository import Gtk
 from gi.repository import Pango
 
 try:
-    from etk.docking import DockLayout, DockPaned, DockGroup, DockItem
+    from etkdocking import DockLayout, DockPaned, DockGroup, DockItem
 except ImportError:
     # The lib directory is most likely not on PYTHONPATH, so add it here.
     import os, sys
@@ -35,7 +35,7 @@ except ImportError:
     sys.path.insert(
         0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "lib"))
     )
-    from etk.docking import DockLayout, DockPaned, DockGroup, DockItem
+    from etkdocking import DockLayout, DockPaned, DockGroup, DockItem
 
     del os, sys
 
