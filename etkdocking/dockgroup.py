@@ -100,7 +100,7 @@ class DockGroup(Gtk.Container):
         self._frame_width = 1
         self._spacing = 3
         self._available_width = 0
-        self._decoration_area = ()
+        self._decoration_area = Gdk.Rectangle()
 
         self._tabs = []
         self._visible_tabs = []
@@ -143,13 +143,17 @@ class DockGroup(Gtk.Container):
         attribute.height = self.get_allocation().height
         attribute.window_type = Gdk.WindowType.CHILD
         attribute.wclass = Gdk.WindowWindowClass.INPUT_OUTPUT
-        attribute.event_mask = Gdk.EventMask.EXPOSURE_MASK | \
-                               Gdk.EventMask.POINTER_MOTION_MASK | \
-                               Gdk.EventMask.BUTTON_PRESS_MASK | \
-                               Gdk.EventMask.BUTTON_RELEASE_MASK
-        attributes_mask = Gdk.WindowAttributesType.X | \
-                          Gdk.WindowAttributesType.Y | \
-                          Gdk.WindowAttributesType.WMCLASS
+        attribute.event_mask = (
+            Gdk.EventMask.EXPOSURE_MASK
+            | Gdk.EventMask.POINTER_MOTION_MASK
+            | Gdk.EventMask.BUTTON_PRESS_MASK
+            | Gdk.EventMask.BUTTON_RELEASE_MASK
+        )
+        attributes_mask = (
+            Gdk.WindowAttributesType.X
+            | Gdk.WindowAttributesType.Y
+            | Gdk.WindowAttributesType.WMCLASS
+        )
         self.window = Gdk.Window(self.get_parent_window(), attribute, attributes_mask)
         self.window.set_user_data(self)
         self.style.attach(self.window)
@@ -201,22 +205,23 @@ class DockGroup(Gtk.Container):
             (bw, bh) = tab.button.size_request()
 
             tab.area.width = (
-                    self._frame_width
-                    + self._spacing
-                    + iw
-                    + self._spacing
-                    + lw
-                    + self._spacing
-                    + bw
-                    + self._spacing
-                    + self._frame_width
+                self._frame_width
+                + self._spacing
+                + iw
+                + self._spacing
+                + lw
+                + self._spacing
+                + bw
+                + self._spacing
+                + self._frame_width
             )
+
             tab.area.height = (
-                    self._frame_width
-                    + self._spacing
-                    + max(ih, lh, bh)
-                    + self._spacing
-                    + self._frame_width
+                self._frame_width
+                + self._spacing
+                + max(ih, lh, bh)
+                + self._spacing
+                + self._frame_width
             )
 
             if tab == self._current_tab:
@@ -281,14 +286,23 @@ class DockGroup(Gtk.Container):
         self._max_button.size_allocate(rect)
 
         rect = Gdk.Rectangle()
-        rect.height = allocation.width - self._frame_width - self._spacing - max_w - min_w
+        rect.height = (
+            allocation.width - self._frame_width - self._spacing - max_w - min_w
+        )
         rect.width = by
         rect.x = min_w
         rect.y = bh
         self._min_button.size_allocate(rect)
 
         rect = Gdk.Rectangle()
-        rect.height = allocation.width - self._frame_width - self._spacing - max_w - min_w - list_w
+        rect.height = (
+            allocation.width
+            - self._frame_width
+            - self._spacing
+            - max_w
+            - min_w
+            - list_w
+        )
         rect.width = by
         rect.x = list_w
         rect.y = bh
@@ -296,13 +310,13 @@ class DockGroup(Gtk.Container):
 
         # Compute available tab area width
         self._available_width = (
-                allocation.width
-                - self._frame_width
-                - self._spacing
-                - max_w
-                - min_w
-                - list_w
-                - self._spacing
+            allocation.width
+            - self._frame_width
+            - self._spacing
+            - max_w
+            - min_w
+            - list_w
+            - self._spacing
         )
 
         # Update visible tabs
@@ -338,61 +352,64 @@ class DockGroup(Gtk.Container):
         for tab in self._visible_tabs:
             tab.area.x = cx
             tab.area.y = cy
+            i = Gdk.Rectangle()
+            l = Gdk.Rectangle()
+            b = Gdk.Rectangle()
+            min_size, natural_size = tab.image.get_preferred_size()
+            i.width, i.height = natural_size.width, natural_size.height
+            min_size, natural_size = tab.label.get_preferred_size()
+            l.width, l.height = natural_size.width, natural_size.height
+            min_size, natural_size = tab.button.get_preferred_size()
+            b.height, b.width = natural_size.width, natural_size.height
 
-            (iw, ih) = tab.image.get_child_requisition()
-            (lw, lh) = tab.label.get_child_requisition()
-            (bh, bw) = tab.button.get_child_requisition()
-
-            ix = cx + self._frame_width + self._spacing
-            iy = old_div((tab.area.height - ih), 2) + 1
-            tab.image.size_allocate((ix, iy, iw, ih))
+            i.x = cx + self._frame_width + self._spacing
+            i.y = old_div((tab.area.height - i.height), 2) + 1
+            tab.image.size_allocate(i)
 
             if len(self._visible_tabs) == 1:
-                lw = tab.area.width - (
-                        self._frame_width
-                        + self._spacing
-                        + iw
-                        + self._spacing
-                        + self._spacing
-                        + bw
-                        + self._spacing
-                        + self._frame_width
-                )
-                lw = max(lw, 0)  # Prevent negative width
-
-            lx = cx + self._frame_width + self._spacing + iw + self._spacing
-            ly = old_div((tab.area.height - lh), 2) + 1
-            tab.label.size_allocate((lx, ly, lw, lh))
-
-            bx = (
-                    cx
+                l.width = (
+                    tab.area.width
+                    - self._frame_width
+                    + self._spacing
+                    + i.width
+                    + self._spacing
+                    + self._spacing
+                    + b.width
+                    + self._spacing
                     + self._frame_width
-                    + self._spacing
-                    + iw
-                    + self._spacing
-                    + lw
-                    + self._spacing
+                )
+                l.width = max(l.width, 0)  # Prevent negative width
+
+            l.x = cx + self._frame_width + self._spacing + i.width + self._spacing
+            l.y = old_div((tab.area.height - l.height), 2) + 1
+            tab.label.size_allocate(l)
+
+            b.x = (
+                cx
+                + self._frame_width
+                + self._spacing
+                + i.width
+                + self._spacing
+                + l.width
+                + self._spacing
             )
-            by = old_div((tab.area.height - bh), 2) + 1
-            tab.button.size_allocate((bx, by, bw, bh))
+            b.y = old_div((tab.area.height - b.height), 2) + 1
+            tab.button.size_allocate(b)
 
             cx += tab.area.width
 
         # Allocate space for the current *item*
         if self._current_tab:
-            ix = self._frame_width + self.border_width
-            iy = self._decoration_area.height + self.border_width
-            iw = max(
-                allocation.width - (2 * self._frame_width) - (2 * self.border_width), 0
+            border_width = self.get_border_width()
+            i.x = self._frame_width + border_width
+            i.y = self._decoration_area.height + border_width
+            i.width = max(
+                allocation.width - (2 * self._frame_width) - (2 * border_width), 0
             )
-            ih = max(
-                allocation.height
-                - (2 * self._frame_width)
-                - (2 * self.border_width)
-                - 23,
-                0,
+            i.height = max(
+                allocation.height - (2 * self._frame_width) - (2 * border_width) - 23, 0
             )
-            self._current_tab.item.size_allocate((ix, iy, iw, ih))
+            self._current_tab.item.size_allocate(i)
 
         # assert not self._current_tab or self._current_tab in self._visible_tabs
         self.queue_draw_area(0, 0, self.allocation.width, self.allocation.height)
@@ -465,11 +482,23 @@ class DockGroup(Gtk.Container):
                 if index < visible_index and index != 0:
                     c.move_to(tx + 0.5, ty + th)
                     c.line_to(tx + 0.5, ty + 8.5)
-                    c.arc(tx + 8.5, 8.5, 8, 180 * (old_div(pi, 180)), 270 * (old_div(pi, 180)))
+                    c.arc(
+                        tx + 8.5,
+                        8.5,
+                        8,
+                        180 * (old_div(pi, 180)),
+                        270 * (old_div(pi, 180)),
+                    )
                     c.set_source_rgb(*dark)
                     c.stroke()
                 elif index > visible_index:
-                    c.arc(tx + tw - 8.5, 8.5, 8, 270 * (old_div(pi, 180)), 360 * (old_div(pi, 180)))
+                    c.arc(
+                        tx + tw - 8.5,
+                        8.5,
+                        8,
+                        270 * (old_div(pi, 180)),
+                        360 * (old_div(pi, 180)),
+                    )
                     c.line_to(tx + tw - 0.5, ty + th)
                     c.set_source_rgb(*dark)
                     c.stroke()
@@ -481,10 +510,22 @@ class DockGroup(Gtk.Container):
                         c.line_to(tx + tw - 8.5, ty + 0.5)
                     else:
                         c.line_to(tx + 0.5, ty + 8.5)
-                        c.arc(tx + 8.5, 8.5, 8, 180 * (old_div(pi, 180)), 270 * (old_div(pi, 180)))
+                        c.arc(
+                            tx + 8.5,
+                            8.5,
+                            8,
+                            180 * (old_div(pi, 180)),
+                            270 * (old_div(pi, 180)),
+                        )
                         c.line_to(tx + tw - 8.5, ty + 0.5)
 
-                    c.arc(tx + tw - 8.5, 8.5, 8, 270 * (old_div(pi, 180)), 360 * (old_div(pi, 180)))
+                    c.arc(
+                        tx + tw - 8.5,
+                        8.5,
+                        8,
+                        270 * (old_div(pi, 180)),
+                        360 * (old_div(pi, 180)),
+                    )
                     c.line_to(tx + tw - 0.5, ty + th)
                     linear = cairo.LinearGradient(0.5, 0.5, 0.5, th)
                     linear.add_color_stop_rgb(1, *tab_light)
@@ -582,14 +623,14 @@ class DockGroup(Gtk.Container):
         if event.window is self.window:
             # Check if we are actually starting a DnD operation
             if (
-                    event.get_state() & Gdk.ModifierType.BUTTON1_MASK
-                    and self.dragcontext.source_button == 1
-                    and self.drag_check_threshold(
-                int(self.dragcontext.source_x),
-                int(self.dragcontext.source_y),
-                int(event.x),
-                int(event.y),
-            )
+                event.get_state() & Gdk.ModifierType.BUTTON1_MASK
+                and self.dragcontext.source_button == 1
+                and self.drag_check_threshold(
+                    int(self.dragcontext.source_x),
+                    int(self.dragcontext.source_y),
+                    int(event.x),
+                    int(event.y),
+                )
             ):
                 self.log.debug("drag_begin")
                 self.dragcontext.dragging = True
@@ -819,7 +860,7 @@ class DockGroup(Gtk.Container):
                 calculated_width += tab.area.width
 
             if calculated_width < available_width and len(self._visible_tabs) < len(
-                    self._tabs
+                self._tabs
             ):
                 tab_age = sorted(
                     self._tabs, key=attrgetter("last_focused"), reverse=True
@@ -843,20 +884,23 @@ class DockGroup(Gtk.Container):
             # If the current item's tab is the only visible tab,
             # we need to recalculate its tab.area.width
             if len(self._visible_tabs) == 1:
-                (iw, ih) = self._current_tab.image.get_child_requisition()
-                (lw, lh) = self._current_tab.label.get_child_requisition()
-                (bh, bw) = self._current_tab.button.get_child_requisition()
+                min_size, natural_size = self._current_tab.image.get_preferred_size()
+                iw, ih = natural_size.width, natural_size.height
+                min_size, natural_size = self._current_tab.label.get_preferred_size()
+                lw, lh = natural_size.width, natural_size.height
+                min_size, natural_size = self._current_tab.button.get_preferred_size()
+                bh, bw = natural_size.width, natural_size.height
 
                 normal = (
-                        self._frame_width
-                        + self._spacing
-                        + iw
-                        + self._spacing
-                        + lw
-                        + self._spacing
-                        + bw
-                        + self._spacing
-                        + self._frame_width
+                    self._frame_width
+                    + self._spacing
+                    + iw
+                    + self._spacing
+                    + lw
+                    + self._spacing
+                    + bw
+                    + self._spacing
+                    + self._frame_width
                 )
 
                 if available_width <= normal:
@@ -872,7 +916,9 @@ class DockGroup(Gtk.Container):
         self._tab_state = tab_state
 
         if self.get_allocation():
-            self.queue_draw_area(0, 0, self.get_allocation().width, self.get_allocation().height)
+            self.queue_draw_area(
+                0, 0, self.get_allocation().width, self.get_allocation().height
+            )
 
     def get_tab_state(self):
         """
@@ -971,7 +1017,7 @@ class DockGroup(Gtk.Container):
         tab.menu_item.set_label(item.get_title())
         tab.menu_item.connect("activate", self._on_list_menu_item_activated, tab)
         self._list_menu.append(tab.menu_item)
-        tab.area = ()
+        tab.area = Gdk.Rectangle()
         tab.last_focused = time()
 
         if self.get_realized():
