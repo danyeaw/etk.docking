@@ -763,21 +763,35 @@ class DockGroup(Gtk.Container):
     ############################################################################
     # GtkContainer
     ############################################################################
-    def do_forall(self, internals, callback, data):
-        # Internal widgets
-        if internals:
+    def do_forall(self, include_internals, callback, callback_data=None):
+        if callback_data:
+            if include_internals:
+                for tab in self._tabs:
+                    callback(tab.image, callback_data)
+                    callback(tab.label, callback_data)
+                    callback(tab.button, callback_data)
+
+                callback(self._list_button, callback_data)
+                callback(self._min_button, callback_data)
+                callback(self._max_button, callback_data)
+
+            # Docked items
             for tab in self._tabs:
-                callback(tab.image, data)
-                callback(tab.label, data)
-                callback(tab.button, data)
+                callback(tab.item)
+        else:
+            if include_internals:
+                for tab in self._tabs:
+                    callback(tab.image)
+                    callback(tab.label)
+                    callback(tab.button)
 
-            callback(self._list_button, data)
-            callback(self._min_button, data)
-            callback(self._max_button, data)
+                callback(self._list_button)
+                callback(self._min_button)
+                callback(self._max_button)
 
-        # Docked items
-        for tab in self._tabs:
-            callback(tab.item, data)
+            # Docked items
+            for tab in self._tabs:
+                callback(tab.item)
 
     def do_add(self, widget):
         if widget not in (tab.item for tab in self._tabs):

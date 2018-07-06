@@ -785,10 +785,13 @@ class DockPaned(Gtk.Container):
     def do_remove(self, widget):
         self._remove_item(widget)
 
-    def do_forall(self, internals, callback, data):
+    def do_forall(self, include_internals, callback, callback_data=None):
         try:
             for item in self._items:
-                callback(item.get_child(), data)
+                if callback_data:
+                    callback(item.get_child(), callback_data)
+                else:
+                    callback(item.get_child())
         except AttributeError:
             pass
 
