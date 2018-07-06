@@ -187,32 +187,36 @@ class CompactButton(Gtk.Widget):
     # GtkWidget
     ############################################################################
     def do_realize(self):
-        Gtk.Widget.do_realize(self)
-        attribute = Gdk.WindowAttr()
-        attribute.x = self.get_allocation().x
-        attribute.y = self.get_allocation().y
-        attribute.width = self.get_allocation().width
-        attribute.height = self.get_allocation().height
-        attribute.window_type = Gdk.WindowType.CHILD
-        attribute.wclass = Gdk.WindowWindowClass.INPUT_OUTPUT
-        attribute.visual = self.get_visual()
-        attribute.colormap = self.get_colormap()
-        attribute.event_mask = Gdk.EventMask.EXPOSURE_MASK | \
-                               Gdk.EventMask.POINTER_MOTION_MASK | \
-                               Gdk.EventMask.BUTTON_PRESS_MASK | \
-                               Gdk.EventMask.BUTTON_RELEASE_MASK
-        attributes_mask = Gdk.WindowAttributesType.X | \
-                          Gdk.WindowAttributesType.Y | \
-                          Gdk.WindowAttributesType.WMCLASS | \
-                          Gdk.WindowAttributesType.VISUAL
-        self._input_window = Gdk.Window(self.get_parent_window(), attribute, attributes_mask)
+        allocation = self.get_allocation()
+        attr = Gdk.WindowAttr()
+        attr.x = allocation.x
+        attr.y = allocation.y
+        attr.width = allocation.width
+        attr.height = allocation.height
+        attr.window_type = Gdk.WindowType.CHILD
+        attr.wclass = Gdk.WindowWindowClass.INPUT_OUTPUT
+        attr.visual = self.get_visual()
+        attr.event_mask = (self.get_events() |
+                                Gdk.EventMask.EXPOSURE_MASK |
+                                Gdk.EventMask.POINTER_MOTION_MASK |
+                                Gdk.EventMask.BUTTON_PRESS_MASK |
+                                Gdk.EventMask.BUTTON_RELEASE_MASK
+                                )
+        attr_mask = (Gdk.WindowAttributesType.X |
+                           Gdk.WindowAttributesType.Y |
+                           Gdk.WindowAttributesType.WMCLASS |
+                           Gdk.WindowAttributesType.VISUAL
+                           )
+        self._input_window = Gdk.Window(self.get_parent_window(), attr, attr_mask)
         self._input_window.set_user_data(self)
         self._refresh_icons()
+        self.set_window(self._input_window)
+        self.set_realized(True)
 
     def do_unrealize(self):
+        self.set_realized(False)
         self._input_window.set_user_data(None)
         self._input_window.destroy()
-        Gtk.Widget.do_unrealize(self)
 
     def do_map(self):
         self._input_window.show()

@@ -130,12 +130,12 @@ class PlaceHolderWindow(Gtk.Window):
     # GtkWidget
     ############################################################################
     def do_realize(self):
-        Gtk.Window.do_realize(self)
+        self.set_realized(True)
         self._gc = self.style.bg_gc[Gtk.StateType.SELECTED]
 
     def do_unrealize(self):
+        self.set_realized(False)
         self._gc = None
-        Gtk.Window.do_unrealize(self)
 
     def do_size_allocate(self, allocation):
         self.log.debug("%s" % allocation)

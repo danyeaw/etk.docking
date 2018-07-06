@@ -134,30 +134,31 @@ class DockGroup(Gtk.Container):
     # GtkWidget
     ############################################################################
     def do_realize(self):
-        # Internal housekeeping
-        self.set_realized(True)
-        attribute = Gdk.WindowAttr()
-        attribute.x = self.get_allocation().x
-        attribute.y = self.get_allocation().y
-        attribute.width = self.get_allocation().width
-        attribute.height = self.get_allocation().height
-        attribute.window_type = Gdk.WindowType.CHILD
-        attribute.wclass = Gdk.WindowWindowClass.INPUT_OUTPUT
-        attribute.event_mask = (
+        allocation = self.get_allocation()
+        attr = Gdk.WindowAttr()
+        attr.x = allocation.x
+        attr.y = allocation.y
+        attr.width = allocation.width
+        attr.height = allocation.height
+        attr.window_type = Gdk.WindowType.CHILD
+        attr.wclass = Gdk.WindowWindowClass.INPUT_OUTPUT
+        attr.event_mask = (
             Gdk.EventMask.EXPOSURE_MASK
             | Gdk.EventMask.POINTER_MOTION_MASK
             | Gdk.EventMask.BUTTON_PRESS_MASK
             | Gdk.EventMask.BUTTON_RELEASE_MASK
         )
-        attributes_mask = (
+        attr_mask = (
             Gdk.WindowAttributesType.X
             | Gdk.WindowAttributesType.Y
             | Gdk.WindowAttributesType.WMCLASS
         )
-        self.window = Gdk.Window(self.get_parent_window(), attribute, attributes_mask)
+        self.window = Gdk.Window(self.get_parent_window(), attr, attr_mask)
         self.window.set_user_data(self)
-        self.style.attach(self.window)
-        self.style.set_background(self.window, Gtk.StateType.NORMAL)
+        # self.window.style = self.window.get_style_context()
+        # self.window.style.set_state(Gtk.StateFlags.NORMAL)
+        self.set_window(self.window)
+        self.set_realized(True)
 
         # Set parent window on all child widgets
         for tab in self._tabs:
@@ -171,9 +172,9 @@ class DockGroup(Gtk.Container):
         self._max_button.set_parent_window(self.window)
 
     def do_unrealize(self):
+        self.set_realized(False)
         self.window.set_user_data(None)
         self.window.destroy()
-        Gtk.Container.do_unrealize(self)
 
     def do_map(self):
         Gtk.Container.do_map(self)
@@ -929,9 +930,10 @@ class DockGroup(Gtk.Container):
         """
         self._tab_state = tab_state
 
-        if self.get_allocation():
+        allocation = self.get_allocation()
+        if allocation:
             self.queue_draw_area(
-                0, 0, self.get_allocation().width, self.get_allocation().height
+                0, 0, allocation.width, allocation.height
             )
 
     def get_tab_state(self):

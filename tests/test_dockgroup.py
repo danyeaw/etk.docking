@@ -126,8 +126,8 @@ class TestDockGroup(unittest.TestCase):
         self.assertTrue(dockitem not in dockgroup)
         assert len(dockgroup.items) == 0
 
-        win.destroy()
         dockgroup.destroy()
+        win.destroy()
 
     def test_append_item(self):
         dockitem = DockItem()
