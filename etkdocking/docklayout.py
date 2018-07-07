@@ -78,7 +78,7 @@ class DockLayout(GObject.GObject):
     }
 
     def __init__(self):
-        GObject.GObject.__init__(self)
+        super(GObject.GObject, self).__init__()
 
         # Initialize logging
         self.log = getLogger("%s.%s" % (self.__gtype_name__, hex(id(self))))
@@ -276,7 +276,7 @@ class DockLayout(GObject.GObject):
         self.update_floating_window_title(container)
 
     def on_widget_drag_motion(self, widget, context, x, y, timestamp):
-        if DRAG_TARGET_ITEM_LIST[0] in context.targets:
+        if DRAG_TARGET_ITEM_LIST.target in context.targets:
             context.docklayout = self
             drag_data = drag_motion(widget, context, x, y, timestamp)
 
@@ -289,7 +289,7 @@ class DockLayout(GObject.GObject):
 
     def on_widget_drag_leave(self, widget, context, timestamp):
         # Note: when dropping, drag-leave is invoked before drag-drop
-        if DRAG_TARGET_ITEM_LIST[0] in context.targets:
+        if DRAG_TARGET_ITEM_LIST.target in context.targets:
             drag_data = self._drag_data
 
             if drag_data and drag_data.leave:
@@ -336,7 +336,7 @@ class DockLayout(GObject.GObject):
                 self._drag_data = None
 
     def on_widget_drag_end(self, widget, context):
-        if DRAG_TARGET_ITEM_LIST[0] in context.targets:
+        if DRAG_TARGET_ITEM_LIST.target in context.targets:
             context.docklayout = self
             return drag_end(widget, context)
 
@@ -1002,48 +1002,40 @@ def dock_frame_magic_borders(self, context, x, y, timestamp):
     "catch-all", the DockFrame.  The Frame should make sure a new DockPaned is
     created with the proper orientation and whatever's needed.
     """
-    a = self.allocation
+    a = self.get_allocation()
     border = self.border_width
 
     if x - border < MAGIC_BORDER_SIZE:
         orientation = Gtk.Orientation.HORIZONTAL
-        allocation = (
-            a.x + border,
-            a.y + border,
-            MAGIC_BORDER_SIZE,
-            a.height - border * 2,
-        )
+        a.x += border
+        a.y += border
+        a.width = MAGIC_BORDER_SIZE
+        a.height -= border * 2
     elif a.width - x - border < MAGIC_BORDER_SIZE:
         orientation = Gtk.Orientation.HORIZONTAL
-        allocation = (
-            a.x + a.width - MAGIC_BORDER_SIZE - border,
-            a.y + border,
-            MAGIC_BORDER_SIZE,
-            a.height - border * 2,
-        )
+        a.x += a.width - MAGIC_BORDER_SIZE - border
+        a.y += border
+        a.width = MAGIC_BORDER_SIZE
+        a.height -= border * 2
     elif y - border < MAGIC_BORDER_SIZE:
         orientation = Gtk.Orientation.VERTICAL
-        allocation = (
-            a.x + border,
-            a.y + border,
-            a.width - border * 2,
-            MAGIC_BORDER_SIZE,
-        )
+        a.x += border
+        a.y += border
+        a.width -= border * 2
+        a.height = MAGIC_BORDER_SIZE
     elif a.height - y - border < MAGIC_BORDER_SIZE:
         orientation = Gtk.Orientation.VERTICAL
-        allocation = (
-            a.x + border,
-            a.y + a.height - MAGIC_BORDER_SIZE - border,
-            a.width - border * 2,
-            MAGIC_BORDER_SIZE,
-        )
+        a.x += border
+        a.y += a.height - MAGIC_BORDER_SIZE - border
+        a.width -= border * 2
+        a.height = MAGIC_BORDER_SIZE
     else:
         return None
 
     placeholder = Placeholder()
-
     self.set_placeholder(placeholder)
-    placeholder.size_allocate(allocation)
+    placeholder.set_size_request(a.width, a.height)
+    placeholder.connect("draw", placeholder.draw_event)
     placeholder.show()
 
     current_child = self.get_children()[0]

@@ -67,15 +67,13 @@ class DockDragContext(object):
 class Placeholder(Gtk.DrawingArea):
     __gtype_name__ = "EtkDockPlaceholder"
 
-    def do_expose_event(self, expose):
-        a = self.allocation
-        c = self.window.cairo_create()
-        c.set_source_rgb(0, 0, 0)
-        c.set_line_width(1.0)
-        c.rectangle(0.5, 0.5, a.width - 1, a.height - 1)
-        # c.set_source_rgba(0, 0, 0, 0)
-        # c.fill()
-        c.stroke()
+    def __init__(self):
+        super(Gtk.DrawingArea, self).__init__()
+
+    def draw_event(self, da, ctx):
+        ctx.set_line_width(1.0)
+        ctx.rectangle(0.5, 0.5, da.get_allocated_width - 1, da.get_allocated_height - 1)
+        ctx.stroke()
 
 
 class PlaceHolderWindow(Gtk.Window):
@@ -98,7 +96,8 @@ class PlaceHolderWindow(Gtk.Window):
     __gtype_name__ = "EtkDockPlaceHolderWindow"
 
     def __init__(self):
-        GObject.GObject.__init__(self, Gtk.WindowType.POPUP)
+        Gtk.Window.__init__(self, Gtk.WindowType.POPUP)
+
         self.set_decorated(False)
         self.set_skip_taskbar_hint(True)
         self.set_type_hint(Gdk.WindowTypeHint.UTILITY)
@@ -143,6 +142,7 @@ class PlaceHolderWindow(Gtk.Window):
 
         self._create_shape(allocation.width, allocation.height)
 
+    # TODO PyGObject no longer uses this virtual method
     def do_expose_event(self, event):
         self.log.debug("%s" % event)
         Gtk.Window.do_expose_event(self, event)

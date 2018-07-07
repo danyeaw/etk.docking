@@ -79,7 +79,7 @@ class CompactButton(Gtk.Widget):
     }
 
     def __init__(self, icon_name_normal="", size=16, has_frame=True):
-        GObject.GObject.__init__(self)
+        super(Gtk.Widget, self).__init__()
         # TODO this is pyGTK specific, and no equivalent in PyGi. Does it need to be GInitiallyUnowned?
         # self.set_flags(self.flags() | Gtk.NO_WINDOW)
 
@@ -236,6 +236,7 @@ class CompactButton(Gtk.Widget):
         if self.get_realized():
             self._input_window.move_resize(*self.allocation)
 
+    # TODO PyGObject no longer uses this virtual method
     def do_expose_event(self, event):
         # Draw icon
         if self.state == Gtk.StateType.NORMAL:

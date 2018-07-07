@@ -30,7 +30,7 @@ gi.require_version("Gtk", "3.0")
 from gi.repository import Gtk
 
 
-class DockSettings(object):
+class DockSettings:
     """
     Container for group specific settings.
     The following settings can be set:

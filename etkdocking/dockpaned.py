@@ -22,7 +22,6 @@ from __future__ import division
 from builtins import hex
 from builtins import zip
 from builtins import range
-from past.utils import old_div
 from builtins import object
 from logging import getLogger
 
@@ -39,7 +38,6 @@ from .docksettings import settings
 
 # The weight we allocate to a newly added item if we can't come up with anything else
 FALLBACK_WEIGHT = 0.2
-
 
 
 class _DockPanedHandle(object):
@@ -139,7 +137,7 @@ class DockPaned(Gtk.Container):
     }
 
     def __init__(self):
-        Gtk.Container.__init__(self)
+        super(Gtk.Container, self).__init__()
 
         # Initialize logging
         self.log = getLogger("%s.%s" % (self.__gtype_name__, hex(id(self))))
@@ -207,7 +205,7 @@ class DockPaned(Gtk.Container):
 
     def obj_set_child_property(self, child, property_id, pspec, value):
         name = pspec.name.replace('-', '_')
-        prop = getattr(cls, name, None)
+        prop = getattr(self, name, None)
         if prop:
             prop.fset(self, value)
 
@@ -280,13 +278,13 @@ class DockPaned(Gtk.Container):
         elif self.get_allocation() and child.get_allocation():
             size = self._effective_size(self.get_allocation()) - self._handle_size
             if self._orientation == Gtk.Orientation.HORIZONTAL:
-                min, natural = child.get_preferred_width()
+                min_size, natural_size = child.get_preferred_width()
             else:
-                min, natural = child.get_preferred_height()
-            child_size = natural
+                min_size, natural_size = child.get_preferred_height()
+            child_size = natural_size
 
             if size > 0 and child_size > 0:
-                item.weight_request = old_div(float(child_size), size)
+                item.weight_request = float(child_size) / size
             else:
                 item.weight_request = FALLBACK_WEIGHT
         else:
@@ -416,7 +414,7 @@ class DockPaned(Gtk.Container):
 
         for item in shrink:
 
-            available_size = self._size(item.get_child().allocation) - item.min_size
+            available_size = self._size(item.child.allocation) - item.min_size
 
             # Check if we can shrink (respecting the child's size_request)
             if available_size > 0:
@@ -429,9 +427,9 @@ class DockPaned(Gtk.Container):
                     adjustment = delta_size
 
                 enlarge.weight_request = (
-                    old_div(float(self._size(enlarge_alloc) + adjustment), size)
+                    float(self._size(enlarge_alloc) + adjustment) / size
                 )
-                item.weight_request = old_div(float(self._size(a) - adjustment), size)
+                item.weight_request = float(self._size(a) - adjustment) / size
 
                 delta_size -= adjustment
 
@@ -458,7 +456,7 @@ class DockPaned(Gtk.Container):
 
         # Scale non-expandable items, so their size does not change effectively
         if self.get_allocation():
-            f = old_div(self._effective_size(self.get_allocation()), size)
+            f = self._effective_size(self.get_allocation()) / size
             for i in self._items:
                 # if i.weight and not i.expand and not i.weight_request:
                 if (
@@ -475,8 +473,8 @@ class DockPaned(Gtk.Container):
         min_size = sum(i.min_size for i in items)
 
         if min_size > size:
-            sf = old_div(size, min_size)
-            self.log.warn("Size scaling required (factor=%f)" % sf)
+            sf = size / min_size
+            self.log.warning("Size scaling required (factor=%f)" % sf)
         else:
             sf = 1.0
 
@@ -562,17 +560,16 @@ class DockPaned(Gtk.Container):
                      )
         self.window = Gdk.Window(self.get_parent_window(), attr, attr_mask)
         self.window.set_user_data(self)
-        self.style.attach(self.window)
         self.set_window(self.window)
         self.set_realized(True)
 
         # Set parent window on all child widgets
         for item in self._items:
-            item.get_child().set_parent_window(self.window)
+            item.child.set_parent_window(self.window)
 
         # Initialize cursors
-        self._hcursor = Gdk.Cursor(display=self.get_display(), name="ew-resize")
-        self._vcursor = Gdk.Cursor(display=self.get_display(), name="ns-resize")
+        self._hcursor = Gdk.Cursor.new_from_name(display=self.get_display(), name="ew-resize")
+        self._vcursor = Gdk.Cursor.new_from_name(display=self.get_display(), name="ns-resize")
 
     def do_unrealize(self):
         self.set_realized(False)
@@ -643,7 +640,7 @@ class DockPaned(Gtk.Container):
 
             # Allocate child widgets: both items and handles, so we can simply increment
             for child in self._children():
-                rect = ()
+                rect = Gdk.Rectangle()
                 rect.x = cx
                 rect.y = cy
 
@@ -665,7 +662,7 @@ class DockPaned(Gtk.Container):
                         if child is self._items[-1]:
                             rect.height += allocation.height - cy
 
-                    child.get_child().size_allocate(rect)
+                    child.child.size_allocate(rect)
 
                 elif isinstance(child, _DockPanedHandle):
                     if self._orientation == Gtk.Orientation.HORIZONTAL:
@@ -686,9 +683,10 @@ class DockPaned(Gtk.Container):
         if self.get_realized():
             self.window.move_resize(*allocation)
 
+    # TODO PyGObject no longer uses this virtual method
     def do_expose_event(self, event):
         for item in self._items:
-            self.propagate_expose(item.get_child(), event)
+            self.propagate_expose(item.child, event)
 
         for handle in self._handles:
             # TODO: render themed handle if not using compact layout
@@ -766,7 +764,7 @@ class DockPaned(Gtk.Container):
             elif delta_size > 0:
                 # Enlarge the item before and shrink the items after the handle
                 enlarge = self._items[handle_index]
-                shrink = self._items[self._items.index(item_after) :]
+                shrink = self._items[self._items.index(item_after):]
                 self._redistribute_size(delta_size, enlarge, shrink)
             else:
                 enlarge = None
@@ -925,7 +923,7 @@ class DockPaned(Gtk.Container):
         the index specified by `item_num`. If `item_num` is out of bounds for
         the item range of the dockpaned this method returns :const:`None`.
         """
-        if item_num >= 0 and item_num <= len(self) - 1:
+        if 0 <= item_num <= len(self) - 1:
             return self._items[item_num].child
         else:
             return None
@@ -974,12 +972,8 @@ class DockPaned(Gtk.Container):
 ############################################################################
 # Install child properties
 ############################################################################
-# for index, (name, pspec) in enumerate(DockPaned.__gchild_properties__.items()):
-#     pspec = list(pspec)
-#     pspec.insert(0, name)
-# for child in DockPaned.get_children():
-#     DockPaned.set_child_property(child, "weight", 0.2)
 DockPaned.install_child_properties()
+
 
 def fair_scale(weight, wmpairs):
     """
@@ -1001,7 +995,7 @@ def fair_scale(weight, wmpairs):
     skip = [False] * len(wmpairs)
     while True:
         try:
-            f = old_div(weight, sum(a[0] for a, s in list(zip(wmpairs, skip)) if not s))
+            f = weight / sum(a[0] for a, s in list(zip(wmpairs, skip)) if not s)
         except ZeroDivisionError:
             f = 0
         for i, (w, m) in enumerate(wmpairs):

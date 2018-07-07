@@ -23,7 +23,7 @@ from logging import getLogger
 import gi
 
 gi.require_version("Gtk", "3.0")
-from gi.repository import Gtk, GObject
+from gi.repository import Gtk, GObject, Gdk
 
 
 class DockFrame(Gtk.Bin):
@@ -35,7 +35,7 @@ class DockFrame(Gtk.Bin):
     __gtype_name__ = "EtkDockFrame"
 
     def __init__(self):
-        GObject.GObject.__init__(self)
+        Gtk.Bin.__init__(self)
 
         # Initialize logging
         self.log = getLogger("%s.%s" % (self.__gtype_name__, hex(id(self))))
@@ -51,20 +51,20 @@ class DockFrame(Gtk.Bin):
         requisition.height = 0
 
         if self.get_child() and self.get_child().props.visible:
-            (requisition.width, requisition.height) = self.get_child().size_request()
+            (requisition.width, requisition.height) = self.child.size_request()
             requisition.width += self.border_width * 2
             requisition.height += self.border_width * 2
 
     def do_size_allocate(self, allocation):
-        self.allocation = allocation
+        self.border_width = self.get_border_width()
 
         if self.get_child() and self.get_child().props.visible:
-            child_allocation = ()
+            child_allocation = Gdk.Rectangle()
             child_allocation.x = allocation.x + self.border_width
             child_allocation.y = allocation.y + self.border_width
             child_allocation.width = allocation.width - (2 * self.border_width)
             child_allocation.height = allocation.height - (2 * self.border_width)
-            self.child.size_allocate(child_allocation)
+            self.get_child().size_allocate(child_allocation)
 
     ############################################################################
     # EtkDockFrame

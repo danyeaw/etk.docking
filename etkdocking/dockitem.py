@@ -67,7 +67,7 @@ class DockItem(Gtk.Bin):
     __gsignals__ = {"close": (GObject.SignalFlags.RUN_LAST, None, ())}
 
     def __init__(self, title="", title_tooltip_text="", icon_name=None, stock_id=None):
-        GObject.GObject.__init__(self)
+        super(GObject.GObject, self).__init__()
 
         # TODO this is pyGTK specific, and no equivalent in PyGi. Does it need to be GInitiallyUnowned?
         # self.set_flags(self.flags() | Gtk.NO_WINDOW)
