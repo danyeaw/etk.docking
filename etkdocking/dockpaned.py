@@ -580,11 +580,12 @@ class DockPaned(Gtk.Container):
 
     def do_map(self):
         self.window.show()
-        Gtk.Container.do_map(self)
+        self.set_mapped(True)
 
     def do_unmap(self):
+        self.set_mapped(False)
         self.window.hide()
-        Gtk.Container.do_unmap(self)
+
 
     def do_size_request(self, requisition):
         # Start with nothing
@@ -592,7 +593,8 @@ class DockPaned(Gtk.Container):
 
         # Add child widgets
         for item in self._items:
-            w, h = item.get_child().size_request()
+            min_size, natural_size = item.child.get_preferred_size()
+            w, h = natural_size.width, natural_size.height
 
             if self._orientation == Gtk.Orientation.HORIZONTAL:
                 width += w

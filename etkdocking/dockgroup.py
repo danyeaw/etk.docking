@@ -175,21 +175,20 @@ class DockGroup(Gtk.Container):
         self.window.destroy()
 
     def do_map(self):
-        Gtk.Container.do_map(self)
         self._list_button.show()
         self._min_button.show()
         self._max_button.show()
         self.window.show()
+        self.set_mapped(True)
 
     def do_unmap(self):
+        self.set_mapped(False)
         self._list_button.hide()
         self._min_button.hide()
         self._max_button.hide()
         self.window.hide()
-        Gtk.Container.do_unmap(self)
 
     def do_size_request(self, requisition):
-        Gtk.Container.do_size_request(self, requisition)
 
         # Start with a zero sized decoration area
         dw = dh = 0
@@ -199,9 +198,12 @@ class DockGroup(Gtk.Container):
         # the other tabs can be hidden when we don't get enough room
         # in the allocation fase.
         for tab in self._tabs:
-            (iw, ih) = tab.image.size_request()
-            (lw, lh) = tab.label.size_request()
-            (bw, bh) = tab.button.size_request()
+            min_size, natural_size = tab.image.get_preferred_size()
+            iw, ih = natural_size.width, natural_size.height
+            min_size, natural_size = tab.label.get_preferred_size()
+            lw, lh = natural_size.width, natural_size.height
+            min_size, natural_size = tab.button.get_preferred_size()
+            bw, bh = natural_size.width, natural_size.height
 
             tab.area.width = (
                 self._frame_width
@@ -229,9 +231,12 @@ class DockGroup(Gtk.Container):
             dh = max(dh, tab.area.height)
 
         # Add decoration button sizes to the decoration area
-        (list_w, list_h) = self._list_button.size_request()
-        (min_w, min_h) = self._min_button.size_request()
-        (max_w, max_h) = self._max_button.size_request()
+        min_size, natural_size = self._list_button.get_preferred_size()
+        list_w, list_h = natural_size.width, natural_size.height
+        min_size, natural_size = self._min_button.get_preferred_size()
+        min_w, min_h = natural_size.width, natural_size.height
+        min_size, natural_size = self._max_button.get_preferred_size()
+        max_w, max_h = natural_size.width, natural_size.height
 
         dw += self._spacing + list_w + min_w + max_w + self._spacing + self._frame_width
         dh = max(
@@ -247,7 +252,7 @@ class DockGroup(Gtk.Container):
 
         # Current item: we only honor the height request
         if self._current_tab:
-            ih = self._current_tab.item.size_request()[1]
+            ih = self._current_tab.item.get_preferred_size()[1]
         else:
             ih = 0
 
@@ -261,40 +266,37 @@ class DockGroup(Gtk.Container):
         self.allocation = allocation
 
         if self.get_realized():
-            self.window.move_resize(*allocation)
+            self.window.move_resize(allocation.x, allocation.y, allocation.width, allocation.height)
 
         # Allocate space for decoration buttons
-        max_w, max_h = self._max_button.get_preferred_size()
         min_size, natural_size = self._max_button.get_preferred_size()
-        max_w = natural_size.width
-        max_h = natural_size.height
+        max_w, max_h = natural_size.width, natural_size.height
         min_size, natural_size = self._min_button.get_preferred_size()
-        min_w = natural_size.width
-        min_h = natural_size.height
+        min_w, min_h = natural_size.width, natural_size.height
         min_size, natural_size = self._list_button.get_preferred_size()
-        list_w = natural_size.width
-        list_h = natural_size.height
+        list_w, list_h = natural_size.width, natural_size.height
+
         bh = max(list_h, min_h, max_h)
         by = self._frame_width + self._spacing
 
-        rect = Gdk.Rectangle()
-        rect.height = allocation.width - self._frame_width - self._spacing - max_w
-        rect.width = by
-        rect.x = max_w
-        rect.y = bh
-        self._max_button.size_allocate(rect)
+        maxb_rect = Gdk.Rectangle()
+        maxb_rect.x = allocation.width - self._frame_width - self._spacing - max_w
+        maxb_rect.y = by
+        maxb_rect.width = max_w
+        maxb_rect.height = bh
+        self._max_button.size_allocate(maxb_rect)
 
-        rect = Gdk.Rectangle()
-        rect.height = (
+        minb_rect = Gdk.Rectangle()
+        minb_rect.height = (
             allocation.width - self._frame_width - self._spacing - max_w - min_w
         )
-        rect.width = by
-        rect.x = min_w
-        rect.y = bh
-        self._min_button.size_allocate(rect)
+        minb_rect.width = by
+        minb_rect.x = min_w
+        minb_rect.y = bh
+        self._min_button.size_allocate(minb_rect)
 
-        rect = Gdk.Rectangle()
-        rect.height = (
+        listb_rect = Gdk.Rectangle()
+        listb_rect.x = (
             allocation.width
             - self._frame_width
             - self._spacing
@@ -302,10 +304,10 @@ class DockGroup(Gtk.Container):
             - min_w
             - list_w
         )
-        rect.width = by
-        rect.x = list_w
-        rect.y = bh
-        self._list_button.size_allocate(rect)
+        listb_rect.y = by
+        listb_rect.width = list_w
+        listb_rect.height = bh
+        self._list_button.size_allocate(listb_rect)
 
         # Compute available tab area width
         self._available_width = (
@@ -352,9 +354,11 @@ class DockGroup(Gtk.Container):
             tab.area.x = cx
             tab.area.y = cy
 
+            i_rect = Gdk.Rectangle()
             min_size, natural_size = tab.image.get_preferred_size()
             iw, ih = natural_size.width, natural_size.height
 
+            l_rect = Gdk.Rectangle()
             min_size, natural_size = tab.label.get_preferred_size()
             lw, lh = natural_size.width, natural_size.height
 
@@ -363,7 +367,8 @@ class DockGroup(Gtk.Container):
 
             ix = cx + self._frame_width + self._spacing
             iy = (tab.area.height - ih) // 2 + 1
-            tab.image.size_allocate(Gdk.Rectangle(ix, iy, iw, ih))
+            i_rect.x, i_rect.y, i_rect.width, i_rect.height = ix, iy, iw, ih
+            tab.image.size_allocate(i_rect)
 
             if len(self._visible_tabs) == 1:
                 lw = (
@@ -381,8 +386,10 @@ class DockGroup(Gtk.Container):
 
             lx = cx + self._frame_width + self._spacing + iw + self._spacing
             ly = (tab.area.height - lh) // 2 + 1
-            tab.label.size_allocate(Gdk.Rectangle(lx, ly, lw, lh))
+            l_rect.x, l_rect.y, l_rect.width, l_rect.height = lx, ly, lw, lh
+            tab.label.size_allocate(l_rect)
 
+            b_rect = Gdk.Rectangle()
             bx = (
                 cx
                 + self._frame_width
@@ -393,22 +400,25 @@ class DockGroup(Gtk.Container):
                 + self._spacing
             )
             by = (tab.area.height - bh) // 2 + 1
-            tab.button.size_allocate(Gdk.Rectangle(bx, by, bw, bh))
+            b_rect.x, b_rect.y, b_rect.width, b_rect.height = bx, by, bw, bh
+            tab.button.size_allocate(b_rect)
 
             cx += tab.area.width
 
         # Allocate space for the current *item*
         if self._current_tab:
+            item_rect = Gdk.Rectangle()
             border_width = self.get_border_width()
-            ix = self._frame_width + border_width
-            iy = self._decoration_area.height + border_width
-            iw = max(
+            item_x = self._frame_width + border_width
+            item_y = self._decoration_area.height + border_width
+            item_w = max(
                 allocation.width - (2 * self._frame_width) - (2 * border_width), 0
             )
-            ih = max(
+            item_h = max(
                 allocation.height - (2 * self._frame_width) - (2 * border_width) - 23, 0
             )
-            self._current_tab.item.size_allocate(Gdk.Rectangle(ix, iy, iw, ih))
+            item_rect.x, item_rect.y, item_rect.width, item_rect.height = item_x, item_y, item_w, item_h
+            self._current_tab.item.size_allocate(item_rect)
 
         # assert not self._current_tab or self._current_tab in self._visible_tabs
         self.queue_draw_area(0, 0, self.allocation.width, self.allocation.height)
