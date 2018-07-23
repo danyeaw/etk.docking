@@ -849,13 +849,13 @@ class DockGroup(Gtk.Container):
             position = len(self)
 
         # Create composite children for tab
-        Gtk.widget_push_composite_child()
+        Gtk.Widget.push_composite_child()
         tab = _DockGroupTab()
         tab.image = item.get_image()
         tab.label = Gtk.Label()
         tab.button = CompactButton(has_frame=False)
         tab.menu_item = Gtk.ImageMenuItem()
-        Gtk.widget_pop_composite_child()
+        Gtk.Widget.pop_composite_child()
 
         # Configure child widgets for tab
         tab.item = item
