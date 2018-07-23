@@ -928,7 +928,7 @@ class DockGroup(Gtk.Container):
         tab.menu_item.set_label(item.get_title())
         tab.menu_item.connect('activate', self._on_list_menu_item_activated, tab)
         self._list_menu.append(tab.menu_item)
-        tab.area = ()
+        tab.area = Gdk.Rectangle()
         tab.last_focused = time()
 
         if self.get_realized():
