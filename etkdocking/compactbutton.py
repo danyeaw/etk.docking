@@ -179,35 +179,44 @@ class CompactButton(Gtk.Widget):
     # GtkWidget
     ############################################################################
     def do_realize(self):
-        Gtk.Widget.do_realize(self)
-        self._input_window = Gdk.Window(self.get_parent_window(),
-                                        x=self.allocation.x,
-                                        y=self.allocation.y,
-                                        width=self.allocation.width,
-                                        height=self.allocation.height,
-                                        window_type=Gdk.WINDOW_CHILD,
-                                        wclass=Gdk.INPUT_ONLY,
-                                        visual=self.get_visual(),
-                                        colormap=self.get_colormap(),
-                                        event_mask=(Gdk.EventMask.ENTER_NOTIFY_MASK |
-                                                    Gdk.EventMask.LEAVE_NOTIFY_MASK |
-                                                    Gdk.EventMask.BUTTON_PRESS_MASK |
-                                                    Gdk.EventMask.BUTTON_RELEASE_MASK))
+        allocation = self.get_allocation()
+        attr = Gdk.WindowAttr()
+        attr.x = allocation.x
+        attr.y = allocation.y
+        attr.width = allocation.width
+        attr.height = allocation.height
+        attr.window_type = Gdk.WindowType.CHILD
+        attr.wclass = Gdk.WindowWindowClass.INPUT_OUTPUT
+        attr.visual = self.get_visual()
+        attr.event_mask = (self.get_events() |
+                                Gdk.EventMask.EXPOSURE_MASK |
+                                Gdk.EventMask.POINTER_MOTION_MASK |
+                                Gdk.EventMask.BUTTON_PRESS_MASK |
+                                Gdk.EventMask.BUTTON_RELEASE_MASK
+                                )
+        attr_mask = (Gdk.WindowAttributesType.X |
+                           Gdk.WindowAttributesType.Y |
+                           Gdk.WindowAttributesType.WMCLASS |
+                           Gdk.WindowAttributesType.VISUAL
+                           )
+        self._input_window = Gdk.Window(self.get_parent_window(), attr, attr_mask)
         self._input_window.set_user_data(self)
         self._refresh_icons()
+        self.set_window(self._input_window)
+        self.set_realized(True)
 
     def do_unrealize(self):
+        self.set_realized(False)
         self._input_window.set_user_data(None)
         self._input_window.destroy()
-        Gtk.Widget.do_unrealize(self)
 
     def do_map(self):
         self._input_window.show()
-        Gtk.Widget.do_map(self)
+        self._input_window.set_mapped(True)
 
     def do_unmap(self):
+        self._input_window.set_mapped(False)
         self._input_window.hide()
-        Gtk.Widget.do_unmap(self)
 
     def do_size_request(self, requisition):
         requisition.width = self._size
@@ -219,6 +228,7 @@ class CompactButton(Gtk.Widget):
         if self.get_realized():
             self._input_window.move_resize(*self.allocation)
 
+    # TODO PyGObject no longer uses this virtual method
     def do_expose_event(self, event):
         # Draw icon
         if self.state == Gtk.StateType.NORMAL:
