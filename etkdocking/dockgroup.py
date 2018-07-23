@@ -811,9 +811,12 @@ class DockGroup(Gtk.Container):
             # If the current item's tab is the only visible tab,
             # we need to recalculate its tab.area.width
             if len(self._visible_tabs) == 1:
-                (iw, ih) = self._current_tab.image.get_child_requisition()
-                (lw, lh) = self._current_tab.label.get_child_requisition()
-                (bh, bw) = self._current_tab.button.get_child_requisition()
+                min_size, natural_size = self._current_tab.image.get_preferred_size()
+                iw, ih = natural_size.width, natural_size.height
+                min_size, natural_size = self._current_tab.label.get_preferred_size()
+                lw, lh = natural_size.width, natural_size.height
+                min_size, natural_size = self._current_tab.button.get_preferred_size()
+                bh, bw = natural_size.width, natural_size.height
 
                 normal = (self._frame_width + self._spacing + iw +
                           self._spacing + lw + self._spacing + bw +
