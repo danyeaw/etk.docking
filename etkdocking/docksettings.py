@@ -27,7 +27,7 @@ name can be used.
 
 from builtins import object
 from builtins import str
-import gtk
+from gi.repository import Gtk
 
 
 class DockSettings(object):
@@ -73,7 +73,7 @@ class DockSettingsDict(object):
         return self[target]
 
     def widget_name(self, target):
-        if isinstance(target, gtk.Widget):
+        if isinstance(target, Gtk.Widget):
             return target.get_name()
         return str(target)
 

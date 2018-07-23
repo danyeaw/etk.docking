@@ -27,15 +27,15 @@ to stdout.
 
 from __future__ import absolute_import
 
-import pygtk
+import gi
 
-pygtk.require('2.0')
+gi.require_version('Gtk', '3.0')
 
-import gtk
+from gi.repository import Gtk
 
 
 def main():
-    w = gtk.Window()
+    w = Gtk.Window()
     w.show()
 
     colors1 = ['fg', 'bg', 'base', 'light', 'mid', 'dark', 'text', 'text_aa']
@@ -55,19 +55,19 @@ def main():
         print '      <tr>'
         print '        <td><b>%s</b></td>' % attribute
 
-        color = w.style.__getattribute__(attribute)[gtk.STATE_INSENSITIVE]
+        color = w.style.__getattribute__(attribute)[Gtk.StateType.INSENSITIVE]
         print '        <td bgcolor="#%x%x%x">&nbsp;</td>' % (
         int(color.red / 256.00), int(color.green / 256.00), int(color.blue / 256.00))
-        color = w.style.__getattribute__(attribute)[gtk.STATE_NORMAL]
+        color = w.style.__getattribute__(attribute)[Gtk.StateType.NORMAL]
         print '        <td bgcolor="#%x%x%x">&nbsp;</td>' % (
         int(color.red / 256.00), int(color.green / 256.00), int(color.blue / 256.00))
-        color = w.style.__getattribute__(attribute)[gtk.STATE_PRELIGHT]
+        color = w.style.__getattribute__(attribute)[Gtk.StateType.PRELIGHT]
         print '        <td bgcolor="#%x%x%x">&nbsp;</td>' % (
         int(color.red / 256.00), int(color.green / 256.00), int(color.blue / 256.00))
-        color = w.style.__getattribute__(attribute)[gtk.STATE_ACTIVE]
+        color = w.style.__getattribute__(attribute)[Gtk.StateType.ACTIVE]
         print '        <td bgcolor="#%x%x%x">&nbsp;</td>' % (
         int(color.red / 256.00), int(color.green / 256.00), int(color.blue / 256.00))
-        color = w.style.__getattribute__(attribute)[gtk.STATE_SELECTED]
+        color = w.style.__getattribute__(attribute)[Gtk.StateType.SELECTED]
         print '        <td bgcolor="#%x%x%x">&nbsp;</td>' % (
         int(color.red / 256.00), int(color.green / 256.00), int(color.blue / 256.00))
 

@@ -21,10 +21,10 @@
 
 import unittest
 
-import pygtk
+import gi
 
-pygtk.require('2.0')
-import gtk
+gi.require_version('Gtk', '3.0')
+from gi.repository import Gtk
 from etkdocking import DockItem, DockGroup
 
 
@@ -44,7 +44,7 @@ class TestDockGroup(unittest.TestCase):
             item_removed_events.append(child)
 
         dockitem = DockItem()
-        dockitem.add(gtk.Button())
+        dockitem.add(Gtk.Button())
         dockgroup = DockGroup()
         dockgroup.connect('remove', on_remove)
         dockgroup.connect('item-removed', on_item_removed)
@@ -98,14 +98,14 @@ class TestDockGroup(unittest.TestCase):
         dockgroup.destroy()
 
     def test_remove(self):
-        win = gtk.Window()
+        win = Gtk.Window()
         dockitem = DockItem()
         dockgroup = DockGroup()
         dockgroup.add(dockitem)
         win.add(dockgroup)
         win.show_all()
 
-        assert dockitem.flags() & gtk.REALIZED
+        assert dockitem.get_realized()
 
         dockgroup.remove(dockitem)
 
@@ -113,11 +113,11 @@ class TestDockGroup(unittest.TestCase):
 
         win.destroy()
 
-        assert not dockitem.flags() & gtk.REALIZED
-        assert not dockgroup.flags() & gtk.REALIZED
+        assert not dockitem.get_realized()
+        assert not dockgroup.get_realized()
 
     def test_item_destroy(self):
-        win = gtk.Window()
+        win = Gtk.Window()
         dockitem = DockItem()
         dockgroup = DockGroup()
         dockgroup.add(dockitem)
@@ -366,7 +366,7 @@ class TestDockGroup(unittest.TestCase):
         dockgroup.add(dockitem2)
         dockgroup.add(dockitem3)
 
-        window = gtk.Window()
+        window = Gtk.Window()
         window.add(dockgroup)
         window.set_size_request(200, 200)
 

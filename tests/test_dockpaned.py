@@ -21,11 +21,11 @@
 
 import unittest
 
-import pygtk
+import gi
 
-pygtk.require('2.0')
-import gtk
-import gtk.gdk as gdk
+gi.require_version('Gtk', '3.0')
+from gi.repository import Gtk
+import Gtk.gdk as gdk
 
 from etkdocking import DockPaned, DockGroup
 
@@ -78,22 +78,22 @@ class TestDockPaned(unittest.TestCase):
         dockpaned.connect('notify::orientation', _on_notify)
 
         notify_called = False
-        dockpaned.set_orientation(gtk.ORIENTATION_VERTICAL)
-        self.assertEquals(dockpaned.get_orientation(), gtk.ORIENTATION_VERTICAL,
+        dockpaned.set_orientation(Gtk.Orientation.VERTICAL)
+        self.assertEquals(dockpaned.get_orientation(), Gtk.Orientation.VERTICAL,
                           msg='get_orientation method did not return expected value')
         self.assertTrue(notify_called,
                         msg='orientation property change notification failed when using set_orientation method')
 
         notify_called = False
-        dockpaned.set_property('orientation', gtk.ORIENTATION_HORIZONTAL)
-        self.assertEquals(dockpaned.get_property('orientation'), gtk.ORIENTATION_HORIZONTAL,
+        dockpaned.set_property('orientation', Gtk.Orientation.HORIZONTAL)
+        self.assertEquals(dockpaned.get_property('orientation'), Gtk.Orientation.HORIZONTAL,
                           msg='get_property method did not return expected value')
         self.assertTrue(notify_called,
                         msg='orientation property change notification failed when using set_property method')
 
         notify_called = False
-        dockpaned.props.orientation = gtk.ORIENTATION_VERTICAL
-        self.assertEquals(dockpaned.props.orientation, gtk.ORIENTATION_VERTICAL,
+        dockpaned.props.orientation = Gtk.Orientation.VERTICAL
+        self.assertEquals(dockpaned.props.orientation, Gtk.Orientation.VERTICAL,
                           msg='.props attribute did not return expected value')
         self.assertTrue(notify_called,
                         msg='orientation property change notification failed when using .props attribute')
@@ -452,7 +452,7 @@ class TestDockPaned(unittest.TestCase):
         dockpaned = DockPaned()
         dockpaned.add(dockgroup1)
         dockpaned.add(dockgroup2)
-        window = gtk.Window()
+        window = Gtk.Window()
         window.add(dockpaned)
         window.show_all()
 

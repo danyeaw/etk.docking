@@ -25,10 +25,10 @@ from __future__ import absolute_import
 import logging
 import random
 
-import gobject
-import gtk
-import gtk.gdk as gdk
-import pango
+from gi.repository import GObject
+from gi.repository import Gtk
+import Gtk.gdk as gdk
+from gi.repository import Pango
 
 try:
     from etk.docking import DockLayout, DockPaned, DockGroup, DockItem
@@ -42,16 +42,16 @@ except ImportError:
     del os, sys
 
 
-class MainWindow(gtk.Window):
+class MainWindow(Gtk.Window):
     def __init__(self):
-        gtk.Window.__init__(self)
+        GObject.GObject.__init__(self)
 
         self.set_default_size(500, 150)
         self.set_title('DockGroup Demo')
         self.set_border_width(4)
         self.file_counter = 1
 
-        vbox = gtk.VBox()
+        vbox = Gtk.VBox()
         vbox.set_spacing(4)
         self.add(vbox)
 
@@ -59,13 +59,13 @@ class MainWindow(gtk.Window):
         # Docking
         ########################################################################
         self.dg = DockGroup()
-        vbox.pack_start(self.dg)
+        vbox.pack_start(self.dg, True, True, 0)
 
         ########################################################################
         # Testing Tools
         ########################################################################
-        adddibutton = gtk.Button('Create docked items')
-        adddibutton.child.set_ellipsize(pango.ELLIPSIZE_MIDDLE)
+        adddibutton = Gtk.Button('Create docked items')
+        adddibutton.get_child().set_ellipsize(Pango.EllipsizeMode.MIDDLE)
         adddibutton.connect('clicked', self._on_add_di_button_clicked)
         vbox.pack_start(adddibutton, False, False)
 
@@ -83,9 +83,9 @@ class MainWindow(gtk.Window):
             icon_name, tooltip_text, text = random.choice(examples)
 
             # Create a TextView and set some example text
-            scrolledwindow = gtk.ScrolledWindow()
-            scrolledwindow.set_policy(gtk.POLICY_AUTOMATIC, gtk.POLICY_AUTOMATIC)
-            textview = gtk.TextView()
+            scrolledwindow = Gtk.ScrolledWindow()
+            scrolledwindow.set_policy(Gtk.PolicyType.AUTOMATIC, Gtk.PolicyType.AUTOMATIC)
+            textview = Gtk.TextView()
             textview.get_buffer().set_text(text)
             scrolledwindow.add(textview)
 
@@ -115,8 +115,8 @@ def main():
     #    handler.addFilter(logging.Filter('EtkDockGroup'))
 
     # Initialize mainloop
-    gobject.threads_init()
-    mainloop = gobject.MainLoop()
+    GObject.threads_init()
+    mainloop = GObject.MainLoop()
 
     # Initialize mainwindow
     mainwindow = MainWindow()

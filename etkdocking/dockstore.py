@@ -30,7 +30,7 @@ import sys
 from simplegeneric import generic
 from xml.etree.ElementTree import Element, SubElement, tostring, fromstring
 
-import gtk
+from gi.repository import Gtk
 
 from .docklayout import DockLayout
 from etkdocking.dockframe import DockFrame
@@ -61,7 +61,7 @@ widget_factory = {}
 def deserialize(layoutstr, itemfactory):
     '''
     Return a new layout with it's attached frames. Frames that should be floating
-    already have their gtk.Window attached (check frame.get_parent()). Transient settings
+    already have their Gtk.Window attached (check frame.get_parent()). Transient settings
     and such should be done by the invoking application.
     '''
 
@@ -88,7 +88,7 @@ def deserialize(layoutstr, itemfactory):
 
 def get_main_frames(layout):
     return (f for f in layout.frames \
-            if not isinstance(f.get_parent(), gtk.Window))
+            if not isinstance(f.get_parent(), Gtk.Window))
 
 
 def finish(layout, main_frame):
@@ -105,7 +105,7 @@ def finish(layout, main_frame):
         parent = frame.get_parent()
 
         if parent:
-            assert isinstance(parent, gtk.Window), parent
+            assert isinstance(parent, Gtk.Window), parent
             parent.set_transient_for(main_window)
 
 
@@ -117,7 +117,7 @@ def parent_attributes(widget):
     d = {}
 
     if isinstance(container, DockPaned):
-        paned_item = [i for i in container._items if i.child is widget][0]
+        paned_item = [i for i in container._items if i.get_child() is widget][0]
         if paned_item.weight:
             d['weight'] = str(int(paned_item.weight * 100))
 
@@ -129,7 +129,7 @@ def attributes(widget):
     raise NotImplementedError
 
 
-@attributes.when_type(gtk.Widget)
+@attributes.when_type(Gtk.Widget)
 def widget_attributes(widget):
     return {'name': widget.get_name() or 'empty'}
 
@@ -156,7 +156,7 @@ def dock_group_attributes(widget):
 
 @attributes.when_type(DockPaned)
 def dock_paned_attributes(widget):
-    return dict(orientation=(widget.get_orientation() == gtk.ORIENTATION_HORIZONTAL and 'horizontal' or 'vertical'),
+    return dict(orientation=(widget.get_orientation() == Gtk.Orientation.HORIZONTAL and 'horizontal' or 'vertical'),
                 **parent_attributes(widget))
 
 
@@ -166,7 +166,7 @@ def dock_frame_attributes(widget):
     d = dict(width=str(a.width), height=str(a.height))
     parent = widget.get_parent()
 
-    if isinstance(parent, gtk.Window) and parent.get_transient_for():
+    if isinstance(parent, Gtk.Window) and parent.get_transient_for():
         d['floating'] = 'true'
         d['x'], d['y'] = list(map(str, parent.get_position()))
 
@@ -222,9 +222,9 @@ def dock_paned_factory(parent, orientation, weight=None, name=None):
         paned.set_name(name)
 
     if orientation == 'horizontal':
-        paned.set_orientation(gtk.ORIENTATION_HORIZONTAL)
+        paned.set_orientation(Gtk.Orientation.HORIZONTAL)
     else:
-        paned.set_orientation(gtk.ORIENTATION_VERTICAL)
+        paned.set_orientation(Gtk.Orientation.VERTICAL)
 
     if weight is not None:
         item = parent.insert_item(paned, weight=old_div(float(weight), 100.))
@@ -243,8 +243,8 @@ def dock_frame_factory(parent, width, height, floating=None, x=None, y=None):
     parent.add(frame)
 
     if floating == 'true':
-        window = gtk.Window(gtk.WINDOW_TOPLEVEL)
-        # self.window.set_type_hint(gdk.WINDOW_TYPE_HINT_UTILITY)
+        window = Gtk.Window(Gtk.WindowType.TOPLEVEL)
+        # self.set_type_hint(Gdk.WindowTypeHint.UTILITY)
         window.set_property('skip-taskbar-hint', True)
         window.move(int(x), int(y))
         window.add(frame)

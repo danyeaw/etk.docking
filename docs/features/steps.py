@@ -1,9 +1,9 @@
-import pygtk
+import gi
 
-pygtk.require('2.0')
+gi.require_version('Gtk', '3.0')
 
 from freshen import Before, After, AfterStep, Given, When, Then, scc as world
-import gtk
+from gi.repository import Gtk
 from etk.docking import DockPaned, DockGroup, DockLayout, DockFrame, DockItem
 from etk.docking.dnd import DRAG_TARGET_ITEM_LIST, DockDragContext
 from etk.docking.docklayout import drag_motion, drag_end, drag_failed
@@ -35,7 +35,7 @@ def tear_down(_):
 
 @Given('a window with (\d+) dockgroups?')
 def default_window(n_groups):
-    world.window = gtk.Window(gtk.WINDOW_TOPLEVEL)
+    world.window = Gtk.Window(Gtk.WindowType.TOPLEVEL)
     world.window.set_default_size(800, 150)
     world.frame = DockFrame()
     world.window.add(world.frame)
@@ -61,7 +61,7 @@ def setup_items(one_other, n_items):
     else:
         index = world.item_index + 1
     for n in range(int(n_items)):
-        button = gtk.Button()
+        button = Gtk.Button()
         item = DockItem(icon_name='file', title='Item %s' % n, title_tooltip_text='')
         item.add(button)
         item.show()
@@ -72,9 +72,9 @@ def setup_items(one_other, n_items):
 @Given('start a main loop')
 def start_a_main_loop():
     world.window.show_all()
-    # simulate gtk.main()
-    while gtk.events_pending():
-        gtk.main_iteration()
+    # simulate Gtk.main()
+    while Gtk.events_pending():
+        Gtk.main_iteration()
 
 
 @Given('define dockgroup (\d+) as "([^"]+)"')
@@ -174,8 +174,8 @@ def drop_between_groups(group1name, group2name):
     # Test is restricted to two groups having the same DockPaned as parent
     assert paned is group2.get_parent()
 
-    index = [i.child for i in paned._items].index(group1)
-    assert index == [i.child for i in paned._items].index(group2) - 1
+    index = [i.get_child() for i in paned._items].index(group1)
+    assert index == [i.get_child() for i in paned._items].index(group2) - 1
     handle = paned._handles[index]
 
     x, y = handle.area.x + handle.area.width / 2, handle.area.y + handle.area.height / 2
