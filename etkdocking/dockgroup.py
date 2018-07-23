@@ -138,22 +138,29 @@ class DockGroup(Gtk.Container):
     # GtkWidget
     ############################################################################
     def do_realize(self):
-        # Internal housekeeping
-        self.set_flags(self.flags() | Gtk.REALIZED)
-        self.window = Gdk.Window(self.get_parent_window(),
-                                 x=self.allocation.x,
-                                 y=self.allocation.y,
-                                 width=self.allocation.width,
-                                 height=self.allocation.height,
-                                 window_type=Gdk.WINDOW_CHILD,
-                                 wclass=Gdk.INPUT_OUTPUT,
-                                 event_mask=(Gdk.EventMask.EXPOSURE_MASK |
-                                             Gdk.EventMask.POINTER_MOTION_MASK |
-                                             Gdk.EventMask.BUTTON_PRESS_MASK |
-                                             Gdk.EventMask.BUTTON_RELEASE_MASK))
+        allocation = self.get_allocation()
+        attr = Gdk.WindowAttr()
+        attr.x = allocation.x
+        attr.y = allocation.y
+        attr.width = allocation.width
+        attr.height = allocation.height
+        attr.window_type = Gdk.WindowType.CHILD
+        attr.wclass = Gdk.WindowWindowClass.INPUT_OUTPUT
+        attr.event_mask = (
+            Gdk.EventMask.EXPOSURE_MASK
+            | Gdk.EventMask.POINTER_MOTION_MASK
+            | Gdk.EventMask.BUTTON_PRESS_MASK
+            | Gdk.EventMask.BUTTON_RELEASE_MASK
+        )
+        attr_mask = (
+            Gdk.WindowAttributesType.X
+            | Gdk.WindowAttributesType.Y
+            | Gdk.WindowAttributesType.WMCLASS
+        )
+        self.window = Gdk.Window(self.get_parent_window(), attr, attr_mask)
         self.window.set_user_data(self)
-        self.style.attach(self.window)
-        self.style.set_background(self.window, Gtk.StateType.NORMAL)
+        self.set_window(self.window)
+        self.set_realized(True)
 
         # Set parent window on all child widgets
         for tab in self._tabs:
