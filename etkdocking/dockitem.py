@@ -66,7 +66,10 @@ class DockItem(Gtk.Bin):
 
     def __init__(self, title='', title_tooltip_text='', icon_name=None, stock_id=None):
         GObject.GObject.__init__(self)
-        self.set_flags(self.flags() | Gtk.NO_WINDOW)
+
+        # TODO this PyGTK Specific
+        # self.set_flags(self.flags() | Gtk.NO_WINDOW)
+
         self.set_redraw_on_allocate(False)
 
         # Initialize logging

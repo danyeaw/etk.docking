@@ -72,7 +72,8 @@ class CompactButton(Gtk.Widget):
 
     def __init__(self, icon_name_normal='', size=16, has_frame=True):
         GObject.GObject.__init__(self)
-        self.set_flags(self.flags() | Gtk.NO_WINDOW)
+        # TODO this is PyGTK specific, and no equivalent in PyGi. Does it need to be GInitiallyUnowned?
+        # self.set_flags(self.flags() | Gtk.NO_WINDOW)
 
         # Initialize logging
         self.log = getLogger('%s.%s' % (self.__gtype_name__, hex(id(self))))
