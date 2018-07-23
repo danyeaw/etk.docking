@@ -64,7 +64,6 @@ class _DockPanedItem(object):
                  'min_size']  # minimum relative weight
 
     def __init__(self):
-        self.get_child() = None
         self.weight = None
         self.weight_request = None
         self.min_size = None
@@ -186,8 +185,8 @@ class DockPaned(Gtk.Container):
 
         # Create new _DockPanedItem
         item = _DockPanedItem()
-        item.get_child() = child
-        item.get_child().set_parent(self)
+        item.child = child
+        item.child.set_parent(self)
 
         if self.get_realized():
             item.get_child().set_parent_window(self.window)
