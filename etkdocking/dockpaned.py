@@ -32,6 +32,7 @@ import gi
 
 gi.require_version("Gtk", "3.0")
 from gi.repository import Gtk, Gdk, GObject
+from gi import _propertyhelper as propertyhelper
 
 from .dnd import DockDragContext
 from .util import rect_overlaps
@@ -84,7 +85,7 @@ class DockPaned(Gtk.Container):
     handle that the user can drag to adjust the division. It does not draw any
     relief around the children or around the separator.
     '''
-    __gtype_name__ = 'EtkDockPaned'
+    # __gtype_name__ = 'EtkDockPaned'
     __gproperties__ = \
         {'handle-size':
              (GObject.TYPE_UINT,
@@ -121,7 +122,7 @@ class DockPaned(Gtk.Container):
                          (GObject.TYPE_OBJECT,))}
 
     def __init__(self):
-        GObject.GObject.__init__(self)
+        Gtk.Container.__init__(self)
 
         # Initialize logging
         self.log = getLogger('%s.%s' % (self.__gtype_name__, hex(id(self))))
