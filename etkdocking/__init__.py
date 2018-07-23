@@ -62,7 +62,7 @@ else:
     del localedir, install_module
 
 # Keep our namespace nice and tidy
-del os, gtk, path
+del os, gi, path
 
 ############################################################################
 # GtkBuilder and Glade create GObject instances (and thus GTK+ widgets) using
@@ -71,8 +71,8 @@ del os, gtk, path
 # This also defines the widgets that can be considered public.
 ############################################################################
 from .docklayout import DockLayout
-from etkdocking.dockframe import DockFrame
+from .dockframe import DockFrame
 from .dockpaned import DockPaned
-from etkdocking.dockgroup import DockGroup
+from .dockgroup import DockGroup
 from .dockitem import DockItem
 from .docksettings import settings
