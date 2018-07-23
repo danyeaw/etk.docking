@@ -30,11 +30,12 @@ from operator import attrgetter
 from time import time
 
 import cairo
-from gi.repository import GObject
-from gi.repository import Gtk
-import Gtk.gdk as gdk
+import gi
 
-from etkdocking import _
+gi.require_version("Gtk", "3.0")
+from gi.repository import Gtk, Gdk, GObject
+
+from . import _
 from .compactbutton import CompactButton
 from .dockitem import DockItem
 from .dnd import DockDragContext, DRAG_TARGET_ITEM_LIST

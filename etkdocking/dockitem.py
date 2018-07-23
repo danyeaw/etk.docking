@@ -23,9 +23,10 @@ from __future__ import absolute_import
 from builtins import hex
 from logging import getLogger
 
-from gi.repository import GObject
-from gi.repository import Gtk
-import Gtk.gdk as gdk
+import gi
+
+gi.require_version("Gtk", "3.0")
+from gi.repository import Gtk, Gdk, GObject
 
 
 class DockItem(Gtk.Bin):

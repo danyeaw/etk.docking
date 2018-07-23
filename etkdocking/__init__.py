@@ -28,13 +28,11 @@ __docformat__ = 'restructuredtext'
 ############################################################################
 # Initialization
 ############################################################################
-try:
-    import gi
-except ImportError:
-    pass
-else:
-    gi.require_version('Gtk', '3.0')
-import os, gtk
+import os
+import gi
+
+gi.require_version("Gtk", "3.0")
+from gi.repository import Gtk, GdkPixbuf
 
 # Register some custom icons into the default icon theme
 path = os.path.abspath(os.path.join(os.path.dirname(__file__), 'icons', '16x16'))

@@ -21,12 +21,6 @@
 
 import unittest
 
-import gi
-
-gi.require_version('Gtk', '3.0')
-from gi.repository import Gtk
-import Gtk.gdk as gdk
-
 from etkdocking import DockPaned, DockGroup
 
 

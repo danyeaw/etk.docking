@@ -26,21 +26,21 @@ import sys
 from collections import namedtuple
 from logging import getLogger
 
+import gi
 from simplegeneric import generic
 
-from gi.repository import GObject
-from gi.repository import Gtk
-import Gtk.gdk as gdk
+gi.require_version("Gtk", "3.0")
+from gi.repository import Gtk, Gdk, GObject
+
 import itertools
 from weakref import WeakKeyDictionary
 
 from .dnd import DRAG_TARGET_ITEM_LIST, Placeholder
-from etkdocking.dockframe import DockFrame
+from .dockframe import DockFrame
 from .dockpaned import DockPaned
 from .dockgroup import DockGroup
 from .dockitem import DockItem
 from .util import flatten
-from .docksettings import settings
 from functools import reduce
 
 # On OSX/X11 Utility windows are above all windows,

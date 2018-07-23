@@ -19,6 +19,9 @@
 # along with etk.docking. If not, see <http://www.gnu.org/licenses/>.
 
 
+import gi
+
+gi.require_version("Gtk", "3.0")
 from gi.repository import Gtk
 
 

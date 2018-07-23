@@ -27,13 +27,15 @@ from builtins import map
 from past.utils import old_div
 import sys
 
+import gi
 from simplegeneric import generic
 from xml.etree.ElementTree import Element, SubElement, tostring, fromstring
 
+gi.require_version("Gtk", "3.0")
 from gi.repository import Gtk
 
 from .docklayout import DockLayout
-from etkdocking.dockframe import DockFrame
+from .dockframe import DockFrame
 from .dockpaned import DockPaned
 from .dockgroup import DockGroup
 from .dockitem import DockItem

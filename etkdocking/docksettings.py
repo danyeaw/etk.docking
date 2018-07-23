@@ -27,6 +27,9 @@ name can be used.
 
 from builtins import object
 from builtins import str
+import gi
+
+gi.require_version("Gtk", "3.0")
 from gi.repository import Gtk
 
 

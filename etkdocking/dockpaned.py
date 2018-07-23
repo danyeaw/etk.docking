@@ -28,9 +28,10 @@ from builtins import zip
 from past.utils import old_div
 from logging import getLogger
 
-from gi.repository import GObject
-from gi.repository import Gtk
-import Gtk.gdk as gdk
+import gi
+
+gi.require_version("Gtk", "3.0")
+from gi.repository import Gtk, Gdk, GObject
 
 from .dnd import DockDragContext
 from .util import rect_overlaps
