@@ -24,6 +24,11 @@ from builtins import object
 from builtins import map
 import unittest
 
+import gi
+
+gi.require_version("Gtk", "3.0")
+from gi.repository import Gtk
+
 from etkdocking import DockLayout, DockFrame, DockPaned, DockGroup, DockItem
 from etkdocking.dockgroup import DockGroup, DRAG_TARGET_ITEM_LIST
 from etkdocking.dnd import DockDragContext

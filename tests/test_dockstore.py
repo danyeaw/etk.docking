@@ -3,6 +3,11 @@ from builtins import object
 from builtins import next
 import unittest
 
+import gi
+
+gi.require_version("Gtk", "3.0")
+from gi.repository import Gtk
+
 from etkdocking import DockLayout, DockFrame, DockPaned, DockGroup, DockItem
 from etkdocking.dockstore import serialize, deserialize, get_main_frames, finish
 
