@@ -112,7 +112,7 @@ class DockGroup(Gtk.Container):
         self._tab_state = Gtk.StateType.SELECTED
         self.dragcontext = DockDragContext()
 
-        Gtk.widget_push_composite_child()
+        Gtk.Widget.push_composite_child()
         self._list_button = CompactButton('compact-list')
         self._list_button.set_tooltip_text(_('Show list'))
         self._list_button.connect('clicked', self._on_list_button_clicked)
@@ -129,7 +129,7 @@ class DockGroup(Gtk.Container):
         self._tab_menu.attach_to_widget(self, None)
         self._list_menu = Gtk.Menu()
         self._list_menu.attach_to_widget(self._list_button, None)
-        Gtk.widget_pop_composite_child()
+        Gtk.Widget.pop_composite_child()
 
     def __len__(self):
         return len(self._tabs)
