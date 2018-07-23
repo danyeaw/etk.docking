@@ -139,6 +139,60 @@ class DockPaned(Gtk.Container):
         self.set_handle_size(4)
         self.set_orientation(Gtk.Orientation.HORIZONTAL)
 
+        # TODO add in to PyGObject
+        self.do_get_child_property = self.obj_get_child_property
+        self.do_set_child_property = self.obj_set_child_property
+
+    # TODO if this works, make merge request to PyGObject, copied from install_properties helper
+    @classmethod
+    def install_child_properties(cls):
+        """
+        Scans the given class for instances of Property and merges them into the
+        classes __gchild_properties__ dict if it exists or adds it if not.
+        """
+        gchild_properties = cls.__gchild_properties__
+
+        props = []
+        for name, prop in list(cls.__dict__.items()):
+            if isinstance(prop, propertyhelper.Property):  # not same as the built-in
+                # if a property was defined with a decorator, it may already have
+                # a name; if it was defined with an assignment (prop = Property(...))
+                # we set the property's name to the member name
+                if not prop.name:
+                    prop.name = name
+                # we will encounter the same property multiple times in case of
+                # custom setter methods
+                if prop.name in gchild_properties:
+                    if gchild_properties[prop.name] == prop.get_pspec_args():
+                        continue
+                    raise ValueError('Property %s was already found in __gchild_properties__' % prop.name)
+                gchild_properties[prop.name] = prop.get_pspec_args()
+                props.append(prop)
+
+        if not props:
+            return
+
+        cls.__gchild_properties__ = gchild_properties
+
+        if 'do_get_child_property' in cls.__dict__ or 'do_set_child_property' in cls.__dict__:
+            for prop in props:
+                if prop.fget != prop._default_getter or prop.fset != prop._default_setter:
+                    raise TypeError(
+                        "GObject subclass %r defines do_get/set_child_property"
+                        " and it also uses a property with a custom setter"
+                        " or getter. This is not allowed" %
+                        (cls.__name__,))
+
+    def obj_get_child_property(self, child, property_id, pspec):
+        name = pspec.name.replace('-', '_')
+        return getattr(self, name, None)
+
+    def obj_set_child_property(self, child, property_id, pspec, value):
+        name = pspec.name.replace('-', '_')
+        prop = getattr(self, name, None)
+        if prop:
+            prop.fset(self, value)
+
     ############################################################################
     # Private
     ############################################################################
@@ -872,10 +926,7 @@ class DockPaned(Gtk.Container):
 ############################################################################
 # Install child properties
 ############################################################################
-for index, (name, pspec) in enumerate(DockPaned.__gchild_properties__.items()):
-    pspec = list(pspec)
-    pspec.insert(0, name)
-    DockPaned.install_child_property(index + 1, tuple(pspec))
+DockPaned.install_child_properties()
 
 
 def fair_scale(weight, wmpairs):
