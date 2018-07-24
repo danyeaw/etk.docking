@@ -654,7 +654,7 @@ class DockGroup(Gtk.Container):
         For group movement, no special action is taken.
         '''
         # Set some data so the DnD process continues
-        selection_data.set(Gdk.atom_intern(DRAG_TARGET_ITEM_LIST[0]),
+        selection_data.set(Gdk.atom_intern(DRAG_TARGET_ITEM_LIST.target),
                            8,
                            '%d tabs' % len(self.dragcontext.dragged_object))
 

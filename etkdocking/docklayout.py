@@ -248,7 +248,7 @@ class DockLayout(GObject.GObject):
         self.update_floating_window_title(container)
 
     def on_widget_drag_motion(self, widget, context, x, y, timestamp):
-        if DRAG_TARGET_ITEM_LIST[0] in context.targets:
+        if DRAG_TARGET_ITEM_LIST.target in context.targets:
             context.docklayout = self
             drag_data = drag_motion(widget, context, x, y, timestamp)
 
@@ -261,7 +261,7 @@ class DockLayout(GObject.GObject):
 
     def on_widget_drag_leave(self, widget, context, timestamp):
         # Note: when dropping, drag-leave is invoked before drag-drop
-        if DRAG_TARGET_ITEM_LIST[0] in context.targets:
+        if DRAG_TARGET_ITEM_LIST.target in context.targets:
             drag_data = self._drag_data
 
             if drag_data and drag_data.leave:
@@ -271,11 +271,11 @@ class DockLayout(GObject.GObject):
     def on_widget_drag_drop(self, widget, context, x, y, timestamp):
         self.log.debug('drag_drop %s %s %s %s', context, x, y, timestamp)
 
-        if DRAG_TARGET_ITEM_LIST[0] in context.targets:
+        if DRAG_TARGET_ITEM_LIST.target in context.targets:
             drag_data = self._drag_data
 
             if drag_data and drag_data.drop_widget:
-                target = Gdk.atom_intern(DRAG_TARGET_ITEM_LIST[0])
+                target = Gdk.atom_intern(DRAG_TARGET_ITEM_LIST.target)
                 drag_data.drop_widget.drag_get_data(context, target, timestamp)
                 return True
 
@@ -293,7 +293,7 @@ class DockLayout(GObject.GObject):
         '''
         self.log.debug('drag_data_received %s, %s, %s, %s, %s, %s' % (context, x, y, selection_data, info, timestamp))
 
-        if DRAG_TARGET_ITEM_LIST[0] in context.targets:
+        if DRAG_TARGET_ITEM_LIST.target in context.targets:
             drag_data = self._drag_data
             assert drag_data.received
 
@@ -303,12 +303,12 @@ class DockLayout(GObject.GObject):
                 self._drag_data = None
 
     def on_widget_drag_end(self, widget, context):
-        if DRAG_TARGET_ITEM_LIST[0] in context.targets:
+        if DRAG_TARGET_ITEM_LIST.target in context.targets:
             context.docklayout = self
             return drag_end(widget, context)
 
     def on_widget_drag_failed(self, widget, context, result):
-        if DRAG_TARGET_ITEM_LIST[0] in context.targets:
+        if DRAG_TARGET_ITEM_LIST.target in context.targets:
             context.docklayout = self
             return drag_failed(widget, context, result)
 

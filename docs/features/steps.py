@@ -11,7 +11,7 @@ from etk.docking.docklayout import drag_motion, drag_end, drag_failed
 
 class StubContext(object):
     def __init__(self, source_widget, items):
-        self.targets = [DRAG_TARGET_ITEM_LIST[0]]
+        self.targets = [DRAG_TARGET_ITEM_LIST.target]
         self.source_widget = source_widget
         # Set up dragcontext (nornally done in motion_notify event)
 
