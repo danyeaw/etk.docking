@@ -70,7 +70,7 @@ class _DockPanedItem(object):
         self.min_size = None
 
     def __contains__(self, pos):
-        return rect_overlaps(self.get_child().allocation, *pos)
+        return rect_overlaps(self.child.get_allocation(), *pos)
 
 
 class DockPaned(Gtk.Container):
@@ -85,7 +85,7 @@ class DockPaned(Gtk.Container):
     handle that the user can drag to adjust the division. It does not draw any
     relief around the children or around the separator.
     '''
-    # __gtype_name__ = 'EtkDockPaned'
+    __gtype_name__ = 'EtkDockPaned'
     __gproperties__ = \
         {'handle-size':
              (GObject.TYPE_UINT,
@@ -244,7 +244,7 @@ class DockPaned(Gtk.Container):
         item.child.set_parent(self)
 
         if self.get_realized():
-            item.get_child().set_parent_window(self.window)
+            item.child.set_parent_window(self.window)
 
         self._items.insert(position, item)
 
@@ -260,12 +260,13 @@ class DockPaned(Gtk.Container):
         elif len(self._items) == 1:
             # First item always gets 100% allocated
             item.weight = 1.0
-        elif self.allocation and child.allocation:
-            size = self._effective_size(self.allocation) - self._handle_size
+        elif self.get_allocation() and child.get_allocation():
+            size = self._effective_size(self.get_allocation()) - self._handle_size
             if self._orientation == Gtk.Orientation.HORIZONTAL:
-                child_size = child.size_request()[0]
+                min_size, natural_size = child.get_preferred_width()
             else:
-                child_size = child.size_request()[1]
+                min_size, natural_size = child.get_preferred_height()
+            child_size = natural_size
 
             if size > 0 and child_size > 0:
                 item.weight_request = old_div(float(child_size), size)
@@ -435,11 +436,12 @@ class DockPaned(Gtk.Container):
         size = float(size)
 
         # Scale non-expandable items, so their size does not change effectively
-        if self.allocation:
-            f = old_div(self._effective_size(self.allocation), size)
+        allocation = self.get_allocation()
+        if allocation:
+            f = old_div(self._effective_size(allocation), size)
             for i in self._items:
                 # if i.weight and not i.expand and not i.weight_request:
-                if i.weight and not settings[i.get_child()].expand and not i.weight_request:
+                if i.weight and not settings[i.child].expand and not i.weight_request:
                     i.weight_request = i.weight * f
 
         requested_items = [i for i in items if i.weight_request]
@@ -470,7 +472,7 @@ class DockPaned(Gtk.Container):
     ############################################################################
 
     def __getitem__(self, index):
-        return self._items[index].get_child()
+        return self._items[index].child
 
     def __delitem__(self, index):
         child = self[index]
@@ -481,13 +483,13 @@ class DockPaned(Gtk.Container):
 
     def __contains__(self, child):
         for i in self._items:
-            if i.get_child() is child:
+            if i.child is child:
                 return True
         return False
 
     def __iter__(self):
         for i in self._items:
-            yield i.get_child()
+            yield i.child
 
     ############################################################################
     # GObject
@@ -879,7 +881,7 @@ class DockPaned(Gtk.Container):
         the item range of the dockpaned this method returns :const:`None`.
         '''
         if item_num >= 0 and item_num <= len(self) - 1:
-            return self._items[item_num].get_child()
+            return self._items[item_num].child
         else:
             return None
 

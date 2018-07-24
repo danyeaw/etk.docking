@@ -834,8 +834,11 @@ class DockGroup(Gtk.Container):
         '''
         self._tab_state = tab_state
 
-        if self.allocation:
-            self.queue_draw_area(0, 0, self.allocation.width, self.allocation.height)
+        allocation = self.get_allocation()
+        if allocation:
+            self.queue_draw_area(
+                0, 0, allocation.width, allocation.height
+            )
 
     def get_tab_state(self):
         '''

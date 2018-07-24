@@ -164,7 +164,7 @@ def dock_paned_attributes(widget):
 
 @attributes.when_type(DockFrame)
 def dock_frame_attributes(widget):
-    a = widget.allocation
+    a = widget.get_allocation()
     d = dict(width=str(a.width), height=str(a.height))
     parent = widget.get_parent()
 
