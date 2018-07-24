@@ -694,21 +694,29 @@ class DockGroup(Gtk.Container):
     ############################################################################
     # GtkContainer
     ############################################################################
-    def do_forall(self, internals, callback, data):
-        # Internal widgets
-        if internals:
-            for tab in self._tabs:
-                callback(tab.image, data)
-                callback(tab.label, data)
-                callback(tab.button, data)
+    def do_forall(self, include_internals, callback, *callback_data):
+        """Invokes the given callback on each tab, with the given data.
 
-            callback(self._list_button, data)
-            callback(self._min_button, data)
-            callback(self._max_button, data)
+        @param include_internals Whether to run on internal children as well, as
+                                 boolean. Ignored, as there are no internal
+                                 children.
+        @param callback The callback to call on each child, as Gtk.Callback
+        @param callback_data The parameters to pass to the callback, as object
+                             or None
+        """
+        if include_internals:
+            for tab in self._tabs:
+                callback(tab.image, *callback_data)
+                callback(tab.label, *callback_data)
+                callback(tab.button, *callback_data)
+
+            callback(self._list_button, *callback_data)
+            callback(self._min_button, *callback_data)
+            callback(self._max_button, *callback_data)
 
         # Docked items
         for tab in self._tabs:
-            callback(tab.item, data)
+            callback(tab.item)
 
     def do_add(self, widget):
         if widget not in (tab.item for tab in self._tabs):

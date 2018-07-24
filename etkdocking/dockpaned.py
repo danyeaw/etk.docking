@@ -751,10 +751,19 @@ class DockPaned(Gtk.Container):
     def do_remove(self, widget):
         self._remove_item(widget)
 
-    def do_forall(self, internals, callback, data):
+    def do_forall(self, include_internals, callback, *callback_data):
+        """Invokes the given callback on each item, with the given data.
+
+        @param include_internals Whether to run on internal children as well, as
+                                 boolean. Ignored, as there are no internal
+                                 children.
+        @param callback The callback to call on each child, as Gtk.Callback
+        @param callback_data The parameters to pass to the callback, as object
+                             or None
+        """
         try:
             for item in self._items:
-                callback(item.get_child(), data)
+                callback(item.get_child(), *callback_data)
         except AttributeError:
             pass
 
