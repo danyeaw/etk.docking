@@ -382,7 +382,7 @@ class DockGroup(Gtk.Container):
             iw = max(allocation.width - (2 * self._frame_width) - (2 * self.border_width), 0)
             ih = max(allocation.height - (2 * self._frame_width) - (2 * self.border_width) - 23, 0)
             i_rect.x, i_rect.y, i_rect.w, i_rect.h = ix, iy, iw, ih
-            self._current_tab.item.size_allocate(item_rect)
+            self._current_tab.item.size_allocate(i_rect)
 
         # assert not self._current_tab or self._current_tab in self._visible_tabs
         self.queue_draw_area(0, 0, self.allocation.width, self.allocation.height)
