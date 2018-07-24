@@ -212,10 +212,10 @@ class CompactButton(Gtk.Widget):
 
     def do_map(self):
         self._input_window.show()
-        self._input_window.set_mapped(True)
+        self.set_mapped(True)
 
     def do_unmap(self):
-        self._input_window.set_mapped(False)
+        self.set_mapped(False)
         self._input_window.hide()
 
     def do_size_request(self, requisition):
