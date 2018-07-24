@@ -40,6 +40,7 @@ from .dockframe import DockFrame
 from .dockpaned import DockPaned
 from .dockgroup import DockGroup
 from .dockitem import DockItem
+from .docksettings import settings
 from .util import flatten
 from functools import reduce
 
@@ -943,7 +944,7 @@ def dock_frame_magic_borders(self, context, x, y, timestamp):
     "catch-all", the DockFrame.  The Frame should make sure a new DockPaned is
     created with the proper orientation and whatever's needed.
     '''
-    a = self.allocation
+    a = self.get_allocation()
     border = self.border_width
 
     if x - border < MAGIC_BORDER_SIZE:
@@ -966,7 +967,7 @@ def dock_frame_magic_borders(self, context, x, y, timestamp):
     placeholder = Placeholder()
 
     self.set_placeholder(placeholder)
-    placeholder.size_allocate(allocation)
+    placeholder.set_size_request(a.width, a.height)
     placeholder.show()
 
     current_child = self.get_children()[0]
