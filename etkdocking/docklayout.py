@@ -156,13 +156,17 @@ class DockLayout(GObject.GObject):
             return
 
         signals = set()
-        drag_dest = widget.drag_dest_get_target_list()
+        dest_target_list = widget.drag_dest_get_target_list()
 
-        if not drag_dest:
-            widget.drag_dest_set(Gtk.DestDefaults.MOTION, [DRAG_TARGET_ITEM_LIST],
-                                 Gdk.DragAction.MOVE)
-        elif DRAG_TARGET_ITEM_LIST not in drag_dest:
-            widget.drag_dest_set_target_list(drag_dest + [DRAG_TARGET_ITEM_LIST])
+        if not dest_target_list:
+            widget.drag_dest_set(
+                flags=Gtk.DestDefaults.MOTION,
+                targets=[DRAG_TARGET_ITEM_LIST],
+                actions=Gdk.DragAction.MOVE
+            )
+        elif not dest_target_list.find(Gdk.Atom.intern("x-etk-docking/item-list", False)):
+            updated_target_list = dest_target_list.add_table([DRAG_TARGET_ITEM_LIST])
+            widget.drag_dest_set_target_list(updated_target_list)
 
         # Use instance methods here, so layout can do additional bookkeeping
         for name, callback in self._get_signals(widget):
