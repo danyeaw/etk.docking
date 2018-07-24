@@ -157,16 +157,16 @@ class DockItem(Gtk.Bin):
         requisition.width = 0
         requisition.height = 0
 
-        if self.get_child() and self.get_child().flags() & Gtk.VISIBLE:
-            (requisition.width, requisition.height) = self.get_child().size_request()
+        if self.get_child() and self.get_child().props.visible:
+            (requisition.width, requisition.height) = self.child.size_request()
             requisition.width += self.border_width * 2
             requisition.height += self.border_width * 2
 
     def do_size_allocate(self, allocation):
-        self.allocation = allocation
+        self.border_width = self.get_border_width()
 
-        if self.get_child() and self.get_child().flags() & Gtk.VISIBLE:
-            child_allocation = ()
+        if self.get_child() and self.get_child().props.visible:
+            child_allocation = Gdk.Rectangle()
             child_allocation.x = allocation.x + self.border_width
             child_allocation.y = allocation.y + self.border_width
             child_allocation.width = allocation.width - (2 * self.border_width)

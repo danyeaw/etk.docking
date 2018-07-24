@@ -510,46 +510,51 @@ class DockPaned(Gtk.Container):
     # GtkWidget
     ############################################################################
     def do_realize(self):
-        # Internal housekeeping
-        self.set_flags(self.flags() | Gtk.REALIZED)
-        self.window = Gdk.Window(self.get_parent_window(),
-                                 x=self.allocation.x,
-                                 y=self.allocation.y,
-                                 width=self.allocation.width,
-                                 height=self.allocation.height,
-                                 window_type=Gdk.WINDOW_CHILD,
-                                 wclass=Gdk.INPUT_OUTPUT,
-                                 event_mask=(Gdk.EventMask.EXPOSURE_MASK |
-                                             Gdk.EventMask.LEAVE_NOTIFY_MASK |
-                                             Gdk.EventMask.BUTTON_PRESS_MASK |
-                                             Gdk.EventMask.BUTTON_RELEASE_MASK |
-                                             Gdk.EventMask.POINTER_MOTION_MASK))
+        allocation = self.get_allocation()
+        attr = Gdk.WindowAttr()
+        attr.x = allocation.x
+        attr.y = allocation.y
+        attr.width = allocation.width
+        attr.height = allocation.height
+        attr.window_type = Gdk.WindowType.CHILD
+        attr.wclass = Gdk.WindowWindowClass.INPUT_OUTPUT
+        attr.event_mask = (Gdk.EventMask.EXPOSURE_MASK |
+                           Gdk.EventMask.LEAVE_NOTIFY_MASK |
+                           Gdk.EventMask.BUTTON_PRESS_MASK |
+                           Gdk.EventMask.BUTTON_RELEASE_MASK |
+                           Gdk.EventMask.POINTER_MOTION_MASK
+                           )
+        attr_mask = (Gdk.WindowAttributesType.X |
+                     Gdk.WindowAttributesType.Y |
+                     Gdk.WindowAttributesType.WMCLASS
+                     )
+        self.window = Gdk.Window(self.get_parent_window(), attr, attr_mask)
         self.window.set_user_data(self)
-        self.style.attach(self.window)
-        self.style.set_background(self.window, Gtk.StateType.NORMAL)
+        self.set_window(self.window)
+        self.set_realized(True)
 
         # Set parent window on all child widgets
         for item in self._items:
-            item.get_child().set_parent_window(self.window)
+            item.child.set_parent_window(self.window)
 
         # Initialize cursors
-        self._hcursor = Gdk.Cursor.new(self.get_display(), Gdk.SB_H_DOUBLE_ARROW)
-        self._vcursor = Gdk.Cursor.new(self.get_display(), Gdk.SB_V_DOUBLE_ARROW)
+        self._hcursor = Gdk.Cursor.new_from_name(display=self.get_display(), name="ew-resize")
+        self._vcursor = Gdk.Cursor.new_from_name(display=self.get_display(), name="ns-resize")
 
     def do_unrealize(self):
+        self.set_realized(False)
         self._hcursor = None
         self._vcursor = None
         self.window.set_user_data(None)
         self.window.destroy()
-        Gtk.Container.do_unrealize(self)
 
     def do_map(self):
         self.window.show()
-        Gtk.Container.do_map(self)
+        self.set_mapped(True)
 
     def do_unmap(self):
+        self.set_mapped(False)
         self.window.hide()
-        Gtk.Container.do_unmap(self)
 
     def do_size_request(self, requisition):
         # Start with nothing
@@ -557,7 +562,8 @@ class DockPaned(Gtk.Container):
 
         # Add child widgets
         for item in self._items:
-            w, h = item.get_child().size_request()
+            min_size, natural_size = item.child.get_preferred_size()
+            w, h = natural_size.width, natural_size.height
 
             if self._orientation == Gtk.Orientation.HORIZONTAL:
                 width += w
