@@ -36,12 +36,11 @@ class LoadingTestCase(unittest.TestCase):
 
         s = serialize(layout)
         print(s)
-        assert bytes(b'<layout><dockframe height="1" width="1">'
-                     b'<dockpaned orientation="horizontal">'
-                     b'<dockgroup weight="100">'
-                     b'<dockitem icon_name="icon" title="t" tooltip="xx" />'
-                     b'</dockgroup></dockpaned></dockframe></layout>'
-                     ) == s, s
+        assert '<layout><dockframe height="1" width="1">' \
+               '<dockpaned orientation="horizontal">' \
+               '<dockgroup weight="100">' \
+               '<dockitem icon_name="icon" title="t" tooltip="xx" />' \
+               '</dockgroup></dockpaned></dockframe></layout>' == s, s
 
     def test_deserialize(self):
         xml = '''
