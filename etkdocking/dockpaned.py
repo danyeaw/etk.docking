@@ -913,7 +913,7 @@ class DockPaned(Gtk.Container):
         '''
         for item in self._items:
             if (x, y) in item:
-                return item.get_child()
+                return item.child
         else:
             return None
 
