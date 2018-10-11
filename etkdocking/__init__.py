@@ -32,40 +32,12 @@ import os
 import gi
 
 gi.require_version("Gtk", "3.0")
-from gi.repository import Gtk, GdkPixbuf
+from gi.repository import Gtk
 
 # Register some custom icons into the default icon theme
+icon_theme = Gtk.IconTheme.get_default()
 path = os.path.abspath(os.path.join(os.path.dirname(__file__), "icons", "16x16"))
-Gtk.IconTheme.add_builtin_icon(
-    "compact-close",
-    16,
-    GdkPixbuf.Pixbuf.new_from_file(os.path.join(path, "compact-close.png")),
-)
-Gtk.IconTheme.add_builtin_icon(
-    "compact-close-prelight",
-    16,
-    GdkPixbuf.Pixbuf.new_from_file(os.path.join(path, "compact-close-prelight.png")),
-)
-Gtk.IconTheme.add_builtin_icon(
-    "compact-list",
-    16,
-    GdkPixbuf.Pixbuf.new_from_file(os.path.join(path, "compact-list.png")),
-)
-Gtk.IconTheme.add_builtin_icon(
-    "compact-minimize",
-    16,
-    GdkPixbuf.Pixbuf.new_from_file(os.path.join(path, "compact-minimize.png")),
-)
-Gtk.IconTheme.add_builtin_icon(
-    "compact-maximize",
-    16,
-    GdkPixbuf.Pixbuf.new_from_file(os.path.join(path, "compact-maximize.png")),
-)
-Gtk.IconTheme.add_builtin_icon(
-    "compact-restore",
-    16,
-    GdkPixbuf.Pixbuf.new_from_file(os.path.join(path, "compact-restore.png")),
-)
+icon_theme.add_resource_path(path)
 
 # Check for elib, not required.
 try:

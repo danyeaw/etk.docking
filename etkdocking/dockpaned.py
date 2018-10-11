@@ -21,17 +21,21 @@
 
 from __future__ import absolute_import
 from __future__ import division
+
+from builtins import hex
 from builtins import object
 from builtins import range
-from builtins import hex
 from builtins import zip
-from past.utils import old_div
 from logging import getLogger
 
 import gi
+from past.utils import old_div
 
 gi.require_version("Gtk", "3.0")
-from gi.repository import Gtk, Gdk, GObject
+from gi.repository import Gdk
+from gi.repository import GLib
+from gi.repository import GObject
+from gi.repository import Gtk
 from gi import _propertyhelper as propertyhelper
 
 from .dnd import DockDragContext
@@ -92,9 +96,9 @@ class DockPaned(Gtk.Container):
               'handle size',
               'handle size',
               0,
-              GObject.G_MAXINT,
+              GLib.MAXINT,
               4,
-              GObject.PARAM_READWRITE),
+              GObject.ParamFlags.READWRITE),
          'orientation':
              (GObject.TYPE_UINT,
               'handle size',
@@ -102,7 +106,7 @@ class DockPaned(Gtk.Container):
               0,
               1,
               0,
-              GObject.PARAM_READWRITE)}
+              GObject.ParamFlags.READWRITE)}
     __gchild_properties__ = \
         {'weight':
              (GObject.TYPE_FLOAT,
@@ -111,7 +115,7 @@ class DockPaned(Gtk.Container):
               0,  # min
               1,  # max
               .2,  # default
-              GObject.PARAM_READWRITE)}
+              GObject.ParamFlags.READWRITE)}
     __gsignals__ = {'item-added':
                         (GObject.SignalFlags.RUN_LAST,
                          None,

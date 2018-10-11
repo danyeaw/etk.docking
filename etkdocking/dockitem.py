@@ -36,30 +36,30 @@ class DockItem(Gtk.Bin):
                             'Title',
                             'The title for the DockItem.',
                             '',
-                            GObject.PARAM_READWRITE),
+                            GObject.ParamFlags.READWRITE),
                        'title-tooltip-text':
                            (GObject.TYPE_STRING,
                             'Title tooltip text',
                             'The tooltip text for the title.',
                             '',
-                            GObject.PARAM_READWRITE),
+                            GObject.ParamFlags.READWRITE),
                        'icon-name':
                            (GObject.TYPE_STRING,
                             'Icon name',
                             'The name of the icon from the icon theme.',
                             '',
-                            GObject.PARAM_READWRITE),
+                            GObject.ParamFlags.READWRITE),
                        'stock':
                            (GObject.TYPE_STRING,
                             'Stock',
                             'Stock ID for a stock image to display.',
                             '',
-                            GObject.PARAM_READWRITE),
+                            GObject.ParamFlags.READWRITE),
                        'image':
                            (GObject.TYPE_PYOBJECT,
                             'Image',
                             'The image constructed from the specified stock ID or icon-name. Default value is Gtk.STOCK_MISSING_IMAGE.',
-                            GObject.PARAM_READABLE)}
+                            GObject.ParamFlags.READABLE)}
     __gsignals__ = {'close':
                         (GObject.SignalFlags.RUN_LAST,
                          None, ())}

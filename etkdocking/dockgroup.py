@@ -21,9 +21,9 @@
 
 from __future__ import absolute_import
 from __future__ import division
-from builtins import object
+
 from builtins import hex
-from past.utils import old_div
+from builtins import object
 from logging import getLogger
 from math import pi
 from operator import attrgetter
@@ -31,9 +31,12 @@ from time import time
 
 import cairo
 import gi
+from past.utils import old_div
 
 gi.require_version("Gtk", "3.0")
-from gi.repository import Gtk, Gdk, GObject
+from gi.repository import Gdk
+from gi.repository import GObject
+from gi.repository import Gtk
 
 from . import _
 from .compactbutton import CompactButton
@@ -111,7 +114,7 @@ class DockGroup(Gtk.Container):
         self._current_tab = None
         self._tab_state = Gtk.StateType.SELECTED
         self.dragcontext = DockDragContext()
-
+        # TODO: Deprecated in Gtk 3.10, composite children are handled by Gtk.WidgetClass.set_template()
         Gtk.Widget.push_composite_child()
         self._list_button = CompactButton('compact-list')
         self._list_button.set_tooltip_text(_('Show list'))
@@ -924,6 +927,7 @@ class DockGroup(Gtk.Container):
         tab.image = item.get_image()
         tab.label = Gtk.Label()
         tab.button = CompactButton(has_frame=False)
+        # TODO: Gtk.ImageMenuItem() has been deprecated in Gtk 3.10 for Gtk.MenuItem()
         tab.menu_item = Gtk.ImageMenuItem()
         Gtk.Widget.pop_composite_child()
 

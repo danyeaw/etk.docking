@@ -26,7 +26,10 @@ from logging import getLogger
 import gi
 
 gi.require_version("Gtk", "3.0")
-from gi.repository import Gtk, Gdk, GObject
+from gi.repository import Gtk
+from gi.repository import Gdk
+from gi.repository import GObject
+from gi.repository import GLib
 
 from .util import load_icon
 
@@ -42,33 +45,33 @@ class CompactButton(Gtk.Widget):
                             'icon name normal',
                             'icon name normal',
                             '',
-                            GObject.PARAM_READWRITE),
+                            GObject.ParamFlags.READWRITE),
                        'icon-name-prelight':
                            (GObject.TYPE_STRING,
                             'icon name prelight',
                             'icon name prelight',
                             '',
-                            GObject.PARAM_READWRITE),
+                            GObject.ParamFlags.READWRITE),
                        'icon-name-active':
                            (GObject.TYPE_STRING,
                             'icon name active',
                             'icon name active',
                             '',
-                            GObject.PARAM_READWRITE),
+                            GObject.ParamFlags.READWRITE),
                        'size':
                            (GObject.TYPE_UINT,
                             'size',
                             'size',
                             0,
-                            GObject.G_MAXUINT,
+                            GLib.MAXUINT,
                             16,
-                            GObject.PARAM_READWRITE),
+                            GObject.ParamFlags.READWRITE),
                        'has-frame':
                            (GObject.TYPE_BOOLEAN,
                             'has frame',
                             'has frame',
                             True,
-                            GObject.PARAM_READWRITE)}
+                            GObject.ParamFlags.READWRITE)}
 
     def __init__(self, icon_name_normal='', size=16, has_frame=True):
         GObject.GObject.__init__(self)

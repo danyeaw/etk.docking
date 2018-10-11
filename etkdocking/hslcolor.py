@@ -30,12 +30,19 @@ from gi.repository import Gdk, GObject
 
 class HslColor(GObject.GObject):
     __gtype_name__ = 'EtkHslColor'
-    __gproperties__ = {'h': (float, 'h', 'h', 0.0, 1.0, 0.0, GObject.PARAM_READWRITE),
-                       's': (float, 's', 's', 0.0, 1.0, 0.0, GObject.PARAM_READWRITE),
-                       'l': (float, 'l', 'l', 0.0, 1.0, 0.0, GObject.PARAM_READWRITE),
-                       'red-float': (float, 'red-float', 'red-float', 0.0, 1.0, 0.0, GObject.PARAM_READABLE),
-                       'green-float': (float, 'green-float', 'green-float', 0.0, 1.0, 0.0, GObject.PARAM_READABLE),
-                       'blue-float': (float, 'blue-float', 'blue-float', 0.0, 1.0, 0.0, GObject.PARAM_READABLE)}
+    __gproperties__ = {'h': (float, 'h', 'h', 0.0, 1.0, 0.0, GObject.ParamFlags.READWRITE),
+                       's': (float, 's', 's', 0.0, 1.0, 0.0, GObject.ParamFlags.READWRITE),
+                       'l': (float, 'l', 'l', 0.0, 1.0, 0.0, GObject.ParamFlags.READWRITE),
+                       'red-float': (
+                           float, 'red-float', 'red-float', 0.0, 1.0, 0.0, GObject.ParamFlags.READABLE
+                       ),
+                       'green-float': (
+                           float, 'green-float', 'green-float', 0.0, 1.0, 0.0, GObject.ParamFlags.READABLE
+                       ),
+                       'blue-float': (
+                           float, 'blue-float', 'blue-float', 0.0, 1.0, 0.0, GObject.ParamFlags.READABLE
+                       )
+                       }
 
     def __init__(self, color):
         GObject.GObject.__init__(self)
