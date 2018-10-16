@@ -53,8 +53,8 @@ class TestDockLayout(unittest.TestCase):
 
         assert frame in layout.frames
         print(layout._signal_handlers)
-        self.assertEquals(4, len(layout._signal_handlers))
-        self.assertEquals(9, len(layout._signal_handlers[frame]))
+        self.assertEqual(4, len(layout._signal_handlers))
+        self.assertEqual(9, len(layout._signal_handlers[frame]))
 
         layout.remove(frame)
 
@@ -78,12 +78,12 @@ class TestDockLayout(unittest.TestCase):
         group.add(item)
 
         assert frame in layout.frames
-        self.assertEquals(4, len(layout._signal_handlers))
-        self.assertEquals(9, len(layout._signal_handlers[frame]))
+        self.assertEqual(4, len(layout._signal_handlers))
+        self.assertEqual(9, len(layout._signal_handlers[frame]))
 
         paned.remove(group)
 
-        self.assertEquals(2, len(layout._signal_handlers), layout._signal_handlers)
+        self.assertEqual(2, len(layout._signal_handlers), layout._signal_handlers)
         assert frame in list(layout._signal_handlers.keys()), layout._signal_handlers
         assert paned in list(layout._signal_handlers.keys()), layout._signal_handlers
         assert group not in list(layout._signal_handlers.keys()), layout._signal_handlers

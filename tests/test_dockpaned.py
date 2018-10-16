@@ -45,21 +45,21 @@ class TestDockPaned(unittest.TestCase):
 
         notify_called = False
         dockpaned.set_handle_size(1)
-        self.assertEquals(dockpaned.get_handle_size(), 1,
+        self.assertEqual(dockpaned.get_handle_size(), 1,
                           msg='get_handle_size method did not return expected value')
         self.assertTrue(notify_called,
                         msg='handle-size property change notification failed when using set_handle_size method')
 
         notify_called = False
         dockpaned.set_property('handle-size', 2)
-        self.assertEquals(dockpaned.get_property('handle-size'), 2,
+        self.assertEqual(dockpaned.get_property('handle-size'), 2,
                           msg='get_property method did not return expected value')
         self.assertTrue(notify_called,
                         msg='handle-size property change notification failed when using set_property method')
 
         notify_called = False
         dockpaned.props.handle_size = 3
-        self.assertEquals(dockpaned.props.handle_size, 3,
+        self.assertEqual(dockpaned.props.handle_size, 3,
                           msg='.props attribute did not return expected value')
         self.assertTrue(notify_called,
                         msg='handle-size property change notification failed when using .props attribute')
@@ -78,21 +78,21 @@ class TestDockPaned(unittest.TestCase):
 
         notify_called = False
         dockpaned.set_orientation(Gtk.Orientation.VERTICAL)
-        self.assertEquals(dockpaned.get_orientation(), Gtk.Orientation.VERTICAL,
+        self.assertEqual(dockpaned.get_orientation(), Gtk.Orientation.VERTICAL,
                           msg='get_orientation method did not return expected value')
         self.assertTrue(notify_called,
                         msg='orientation property change notification failed when using set_orientation method')
 
         notify_called = False
         dockpaned.set_property('orientation', Gtk.Orientation.HORIZONTAL)
-        self.assertEquals(dockpaned.get_property('orientation'), Gtk.Orientation.HORIZONTAL,
+        self.assertEqual(dockpaned.get_property('orientation'), Gtk.Orientation.HORIZONTAL,
                           msg='get_property method did not return expected value')
         self.assertTrue(notify_called,
                         msg='orientation property change notification failed when using set_property method')
 
         notify_called = False
         dockpaned.props.orientation = Gtk.Orientation.VERTICAL
-        self.assertEquals(dockpaned.props.orientation, Gtk.Orientation.VERTICAL,
+        self.assertEqual(dockpaned.props.orientation, Gtk.Orientation.VERTICAL,
                           msg='.props attribute did not return expected value')
         self.assertTrue(notify_called,
                         msg='orientation property change notification failed when using .props attribute')
@@ -232,14 +232,14 @@ class TestDockPaned(unittest.TestCase):
         dockpaned.insert_item(dockgroup1)
         dockpaned._items[0].min_size = 20
 
-        self.assertEquals(1, len(dockpaned._items))
-        self.assertEquals(1.0, dockpaned._items[0].weight)
-        self.assertEquals(None, dockpaned._items[0].weight_request)
+        self.assertEqual(1, len(dockpaned._items))
+        self.assertEqual(1.0, dockpaned._items[0].weight)
+        self.assertEqual(None, dockpaned._items[0].weight_request)
 
         dockpaned._redistribute_weight(100)
 
-        self.assertEquals(1.0, dockpaned._items[0].weight)
-        self.assertEquals(None, dockpaned._items[0].weight_request)
+        self.assertEqual(1.0, dockpaned._items[0].weight)
+        self.assertEqual(None, dockpaned._items[0].weight_request)
 
         dockpaned.insert_item(dockgroup2, weight=0.5)
         dockpaned._items[1].min_size = 20
@@ -248,8 +248,8 @@ class TestDockPaned(unittest.TestCase):
 
         dockpaned._redistribute_weight(100)
 
-        self.assertAlmostEquals(0.5, dockpaned._items[0].weight, 4)
-        self.assertAlmostEquals(0.5, dockpaned._items[1].weight, 4)
+        self.assertAlmostEqual(0.5, dockpaned._items[0].weight, 4)
+        self.assertAlmostEqual(0.5, dockpaned._items[1].weight, 4)
 
     def test_redistribute_weight_resize(self):
         dockpaned = DockPaned()
@@ -259,14 +259,14 @@ class TestDockPaned(unittest.TestCase):
         dockpaned.insert_item(dockgroup1, weight=0.5)
         dockpaned._items[0].min_size = 20
 
-        self.assertEquals(1, len(dockpaned._items))
-        self.assertEquals(None, dockpaned._items[0].weight)
-        self.assertEquals(0.5, dockpaned._items[0].weight_request)
+        self.assertEqual(1, len(dockpaned._items))
+        self.assertEqual(None, dockpaned._items[0].weight)
+        self.assertEqual(0.5, dockpaned._items[0].weight_request)
 
         dockpaned._redistribute_weight(100)
 
-        self.assertEquals(1.0, dockpaned._items[0].weight)
-        self.assertEquals(None, dockpaned._items[0].weight_request)
+        self.assertEqual(1.0, dockpaned._items[0].weight)
+        self.assertEqual(None, dockpaned._items[0].weight_request)
 
         dockpaned.insert_item(dockgroup2, weight=0.5)
         dockpaned._items[1].min_size = 20
@@ -275,8 +275,8 @@ class TestDockPaned(unittest.TestCase):
 
         dockpaned._redistribute_weight(100)
 
-        self.assertAlmostEquals(0.5, dockpaned._items[0].weight, 4)
-        self.assertAlmostEquals(0.5, dockpaned._items[1].weight, 4)
+        self.assertAlmostEqual(0.5, dockpaned._items[0].weight, 4)
+        self.assertAlmostEqual(0.5, dockpaned._items[1].weight, 4)
 
     ############################################################################
     # Test public api

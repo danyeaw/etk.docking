@@ -348,15 +348,15 @@ class TestDockGroup(unittest.TestCase):
 
         dockitem1 = DockItem()
         dockgroup.add(dockitem1)
-        self.assertEquals([dockitem1], events)
-        self.assertEquals([True], item_in)
-        self.assertEquals([True], item_in_after)
+        self.assertEqual([dockitem1], events)
+        self.assertEqual([True], item_in)
+        self.assertEqual([True], item_in_after)
 
         dockitem2 = DockItem()
         dockgroup.insert_item(dockitem2)
-        self.assertEquals([dockitem1], events)
-        self.assertEquals([True], item_in)
-        self.assertEquals([True], item_in_after)
+        self.assertEqual([dockitem1], events)
+        self.assertEqual([True], item_in)
+        self.assertEqual([True], item_in_after)
 
     def test_drag_begin(self):
         dockitem1 = DockItem()
@@ -371,7 +371,7 @@ class TestDockGroup(unittest.TestCase):
         window.add(dockgroup)
         window.set_size_request(200, 200)
 
-        self.assertEquals(dockitem3, dockgroup._current_tab.item)
+        self.assertEqual(dockitem3, dockgroup._current_tab.item)
 
     def test_item_closed_event_is_emited_on_close(self):
         dockitem = DockItem()

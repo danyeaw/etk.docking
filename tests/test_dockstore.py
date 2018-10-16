@@ -118,8 +118,8 @@ class LoadingTestCase(unittest.TestCase):
 
         assert floating_frames[0].get_toplevel().get_transient_for() is win
 
-        self.assertEquals(0.45, main_frames[0].get_children()[0]._items[0].weight_request)
+        self.assertEqual(0.45, main_frames[0].get_children()[0]._items[0].weight_request)
 
         win.show_all()
 
-        self.assertEquals(0.45, main_frames[0].get_children()[0]._items[0].weight)
+        self.assertEqual(0.45, main_frames[0].get_children()[0]._items[0].weight)
