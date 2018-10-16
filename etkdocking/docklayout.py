@@ -438,7 +438,7 @@ def _window_delete_handler(window, event):
 
 
 def add_new_group_floating(new_group, layout, size=None, pos=None):
-    window = Gtk.Window(Gtk.WindowType.TOPLEVEL)
+    window = Gtk.Window.new(Gtk.WindowType.TOPLEVEL)
 
     if pos:
         window.move(*pos)

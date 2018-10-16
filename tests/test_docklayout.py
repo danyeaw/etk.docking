@@ -36,7 +36,7 @@ from etkdocking.dnd import DockDragContext
 class TestDockLayout(unittest.TestCase):
 
     def test_construction(self):
-        win = Gtk.Window(Gtk.WindowType.TOPLEVEL)
+        win = Gtk.Window.new(Gtk.WindowType.TOPLEVEL)
         frame = DockFrame()
         paned = DockPaned()
         group = DockGroup()
@@ -62,7 +62,7 @@ class TestDockLayout(unittest.TestCase):
         assert frame not in layout.frames
 
     def test_construction_after_setting_layout(self):
-        win = Gtk.Window(Gtk.WindowType.TOPLEVEL)
+        win = Gtk.Window.new(Gtk.WindowType.TOPLEVEL)
         frame = DockFrame()
         paned = DockPaned()
         group = DockGroup()
@@ -91,7 +91,7 @@ class TestDockLayout(unittest.TestCase):
         assert frame in layout.frames
 
     def test_get_widgets(self):
-        win = Gtk.Window(Gtk.WindowType.TOPLEVEL)
+        win = Gtk.Window.new(Gtk.WindowType.TOPLEVEL)
         frame = DockFrame()
         paned = DockPaned()
         group = DockGroup()
@@ -179,7 +179,7 @@ class TestDockLayoutDnD(unittest.TestCase):
         del DockFrame.drag_get_data
 
     def test_drag_drop_on_group(self):
-        win = Gtk.Window(Gtk.WindowType.TOPLEVEL)
+        win = Gtk.Window.new(Gtk.WindowType.TOPLEVEL)
         frame = DockFrame()
         paned = DockPaned()
         group = DockGroup()
@@ -213,7 +213,7 @@ class TestDockLayoutDnD(unittest.TestCase):
         layout.on_widget_drag_drop(group, context, x, y, 0)
 
     def test_drag_drop_on_paned(self):
-        win = Gtk.Window(Gtk.WindowType.TOPLEVEL)
+        win = Gtk.Window.new(Gtk.WindowType.TOPLEVEL)
         frame = DockFrame()
         paned = DockPaned()
         groups = (DockGroup(), DockGroup())
@@ -240,7 +240,7 @@ class TestDockLayoutDnD(unittest.TestCase):
         assert layout._drag_data.drop_widget is paned, '%s != %s' % (layout._drag_data.drop_widget, paned)
 
     def test_remove_paned_with_one_child(self):
-        win = Gtk.Window(Gtk.WindowType.TOPLEVEL)
+        win = Gtk.Window.new(Gtk.WindowType.TOPLEVEL)
         frame = DockFrame()
         paned = DockPaned()
         groups = (DockGroup(), DockGroup())
@@ -266,7 +266,7 @@ class TestDockLayoutDnD(unittest.TestCase):
         assert groups[1].get_parent() is frame
 
     def test_remove_nested_paned_with_one_child(self):
-        win = Gtk.Window(Gtk.WindowType.TOPLEVEL)
+        win = Gtk.Window.new(Gtk.WindowType.TOPLEVEL)
         frame = DockFrame()
         paneds = (DockPaned(), DockPaned())
         groups = (DockGroup(), DockGroup())
@@ -295,7 +295,7 @@ class TestDockLayoutDnD(unittest.TestCase):
         assert groups[1].get_parent() is paneds[0], (paneds, groups[1].get_parent())
 
     def test_remove_empty_groups_recursively(self):
-        win = Gtk.Window(Gtk.WindowType.TOPLEVEL)
+        win = Gtk.Window.new(Gtk.WindowType.TOPLEVEL)
         frame = DockFrame()
         paneds = (DockPaned(), DockPaned(), DockPaned())
         group = DockGroup()
@@ -326,7 +326,7 @@ class PlacementTest(unittest.TestCase):
 
     def setUp(self):
         self.layout = DockLayout()
-        self.window = Gtk.Window(Gtk.WindowType.TOPLEVEL)
+        self.window = Gtk.Window.new(Gtk.WindowType.TOPLEVEL)
         self.frame = DockFrame()
         self.group = DockGroup()
 

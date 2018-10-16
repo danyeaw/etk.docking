@@ -35,7 +35,7 @@ def tear_down(_):
 
 @Given('a window with (\d+) dockgroups?')
 def default_window(n_groups):
-    world.window = Gtk.Window(Gtk.WindowType.TOPLEVEL)
+    world.window = Gtk.Window.new(Gtk.WindowType.TOPLEVEL)
     world.window.set_default_size(800, 150)
     world.frame = DockFrame()
     world.window.add(world.frame)

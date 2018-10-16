@@ -15,13 +15,13 @@ from etkdocking.dockstore import serialize, deserialize, get_main_frames, finish
 class ItemFactory(object):
 
     def __call__(self, label):
-        return Gtk.Button(label)
+        return Gtk.Button.new_with_label(label)
 
 
 class LoadingTestCase(unittest.TestCase):
 
     def test_serialize(self):
-        win = Gtk.Window(Gtk.WindowType.TOPLEVEL)
+        win = Gtk.Window.new(Gtk.WindowType.TOPLEVEL)
         layout = DockLayout()
         frame = DockFrame()
         win.add(frame)
@@ -71,7 +71,7 @@ class LoadingTestCase(unittest.TestCase):
         button = item.get_child()
         assert isinstance(button, Gtk.Button)
         assert "fillme" == button.get_label(), button.get_label()
-        win = Gtk.Window(Gtk.WindowType.TOPLEVEL)
+        win = Gtk.Window.new(Gtk.WindowType.TOPLEVEL)
         win.add(frame)
         win.show()
         while Gtk.events_pending():
