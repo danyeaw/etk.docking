@@ -49,10 +49,10 @@ class _DockPanedHandle(object):
     '''
     Private object storing information about a handle.
     '''
-    __slots__ = ['area']  # area, used for hit testing ()
+    __slots__ = ['area']  # area, used for hit testing (Gdk.Rectangle)
 
     def __init__(self):
-        self.area = ()
+        self.area = Gdk.Rectangle()
 
     def __contains__(self, pos):
         return rect_overlaps(self.area, *pos)
@@ -559,7 +559,7 @@ class DockPaned(Gtk.Container):
 
             # Allocate child widgets: both items and handles, so we can simply increment
             for child in self._children():
-                rect = ()
+                rect = Gdk.Rectangle()
                 rect.x = cx
                 rect.y = cy
                 child.weight = self.get_property('weight')
