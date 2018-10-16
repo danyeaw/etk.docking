@@ -67,8 +67,7 @@ class DockItem(Gtk.Bin):
     def __init__(self, title='', title_tooltip_text='', icon_name=None, stock_id=None):
         Gtk.Bin.__init__(self)
 
-        # TODO this PyGTK Specific
-        # self.set_flags(self.flags() | Gtk.NO_WINDOW)
+        self.set_has_window(False)
 
         self.set_redraw_on_allocate(False)
 
