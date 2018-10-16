@@ -97,7 +97,7 @@ class DockGroup(Gtk.Container):
                          (GObject.TYPE_OBJECT,))}
 
     def __init__(self):
-        GObject.GObject.__init__(self)
+        Gtk.Container.__init__(self)
 
         # Initialize logging
         self.log = getLogger('%s.%s' % (self.__gtype_name__, hex(id(self))))

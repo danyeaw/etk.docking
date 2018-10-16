@@ -37,7 +37,7 @@ class DockFrame(Gtk.Bin):
     __gtype_name__ = 'EtkDockFrame'
 
     def __init__(self):
-        GObject.GObject.__init__(self)
+        Gtk.Bin.__init__(self)
 
         # Initialize logging
         self.log = getLogger('%s.%s' % (self.__gtype_name__, hex(id(self))))

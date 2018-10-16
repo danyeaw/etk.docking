@@ -97,7 +97,7 @@ class PlaceHolderWindow(Gtk.Window):
     __gtype_name__ = 'EtkDockPlaceHolderWindow'
 
     def __init__(self):
-        GObject.GObject.__init__(self, Gtk.WindowType.POPUP)
+        Gtk.Window.__init__(self, Gtk.WindowType.POPUP)
         self.set_decorated(False)
         self.set_skip_taskbar_hint(True)
         self.set_type_hint(Gdk.WindowTypeHint.UTILITY)
