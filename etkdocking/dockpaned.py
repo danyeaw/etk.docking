@@ -712,7 +712,7 @@ class DockPaned(Gtk.Container):
         """
         try:
             for item in self._items:
-                callback(item.get_child(), *callback_data)
+                callback(item.child, *callback_data)
         except AttributeError:
             pass
 
