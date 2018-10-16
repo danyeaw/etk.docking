@@ -54,7 +54,7 @@ def serialize(layout):
     tree = Element('layout')
     list(map(_ser, layout.frames, [tree] * len(layout.frames)))
 
-    return tostring(tree, encoding="utf-8")
+    return tostring(tree, encoding='unicode')
 
 
 widget_factory = {}
