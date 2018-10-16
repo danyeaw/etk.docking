@@ -399,7 +399,7 @@ def add_new_group(widget, new_group, orientation, position):
 
     try:
         current_position = parent.item_num(widget)
-        weight = parent.child_get_property(widget, 'weight')
+        weight = widget.get_property('weight')
     except AttributeError:
         current_position = None
 
@@ -796,7 +796,7 @@ def dock_paned_cleanup(self, layout):
 
         if isinstance(parent, DockPaned):
             position = [c for c in parent].index(self)
-            weight = parent.child_get_property(self, 'weight')
+            weight = self.get_property('weight')
             self.remove(child)
             parent.remove(self)
             parent.insert_item(child, position=position, weight=weight)
@@ -858,7 +858,7 @@ def dock_paned_magic_borders(self, context, x, y, timestamp):
             else:
                 orientation = Gtk.Orientation.HORIZONTAL
 
-            weight = self.child_get_property(current_group, 'weight')
+            weight = current_group.get_property('weight')
 
             if min(x, y) < MAGIC_BORDER_SIZE:
                 position = 0

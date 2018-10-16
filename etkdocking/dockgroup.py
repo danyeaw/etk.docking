@@ -83,6 +83,14 @@ class DockGroup(Gtk.Container):
     etk.DockGroup.
     '''
     __gtype_name__ = 'EtkDockGroup'
+    __gproperties__ = {'weight':
+                        (GObject.TYPE_FLOAT,
+                         'item weight',
+                         'item weight',
+                         0,  # min
+                         1,  # max
+                         .2,  # default
+                         GObject.ParamFlags.READWRITE)}
     __gsignals__ = {'item-added':
                         (GObject.SignalFlags.RUN_LAST,
                          None,

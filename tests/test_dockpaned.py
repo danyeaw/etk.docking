@@ -111,11 +111,11 @@ class TestDockPaned(unittest.TestCase):
 
         dockpaned = DockPaned()
         dockgroup = DockGroup()
-        dockgroup.connect('child-notify::weight', _on_child_notify)
+        dockgroup.connect('notify::weight', _on_child_notify)
         dockpaned.add(dockgroup)
 
         child_notify_called = False
-        dockpaned.child_set_property(dockgroup, 'weight', 0.3)
+        dockgroup.props.weight = 0.3
         self.assertTrue(child_notify_called,
                         msg='weight child property change notification failed')
 
