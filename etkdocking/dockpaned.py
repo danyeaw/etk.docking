@@ -582,7 +582,7 @@ class DockPaned(Gtk.Container):
                         if child is self._items[-1]:
                             rect.height += allocation.height - cy
 
-                    child.get_child().size_allocate(rect)
+                    child.child.size_allocate(rect)
 
                 elif isinstance(child, _DockPanedHandle):
                     if self._orientation == Gtk.Orientation.HORIZONTAL:
