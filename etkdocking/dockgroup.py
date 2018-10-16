@@ -149,6 +149,7 @@ class DockGroup(Gtk.Container):
     # GtkWidget
     ############################################################################
     def do_realize(self):
+        self.get_realized()
         allocation = self.get_allocation()
         attr = Gdk.WindowAttr()
         attr.x = allocation.x
@@ -170,10 +171,8 @@ class DockGroup(Gtk.Container):
         )
         self.window = Gdk.Window(self.get_parent_window(), attr, attr_mask)
         self.window.set_user_data(self)
-        # self.window.style = self.window.get_style_context()
-        # self.window.style.set_state(Gtk.StateFlags.NORMAL)
-        self.set_window(self.window)
-        self.set_realized(True)
+        # TODO: do we care about attaching style information?
+        # self.style_attach()
 
         # Set parent window on all child widgets
         for tab in self._tabs:
@@ -187,23 +186,23 @@ class DockGroup(Gtk.Container):
         self._max_button.set_parent_window(self.window)
 
     def do_unrealize(self):
-        self.set_realized(False)
         self.window.set_user_data(None)
         self.window.destroy()
+        Gtk.Container.do_unrealize(self)
 
     def do_map(self):
+        Gtk.Container.do_map(self)
         self._list_button.show()
         self._min_button.show()
         self._max_button.show()
         self.window.show()
-        self.set_mapped(True)
 
     def do_unmap(self):
-        self.set_mapped(False)
         self._list_button.hide()
         self._min_button.hide()
         self._max_button.hide()
         self.window.hide()
+        Gtk.Container.do_unmap(self)
 
     def do_size_request(self, requisition):
 
