@@ -504,35 +504,83 @@ class DockPaned(Gtk.Container):
         self.set_mapped(False)
         self.window.hide()
 
-    def do_size_request(self, requisition):
-        # Start with nothing
-        width = height = 0
+    def do_get_request_mode(self):
+        """Returns whether the container prefers a height-for-width or a
+        width-for-height layout. DockPaned doesn't trade width for height or
+        height for width so we return CONSTANT_SIZE.
+        """
+        return Gtk.SizeRequestMode.CONSTANT_SIZE
+
+    def do_get_preferred_height(self):
+        """Calculates the container's initial minimum and natural height. While
+        this call is specific to width-for-height requests (that we requested
+        not to get) we cannot be certain that our wishes are granted, so
+        we must implement this method as well. Returns the the decoration area
+        height.
+        """
+        min_height = nat_height = 0
 
         # Add child widgets
         for item in self._items:
-            min_size, natural_size = item.child.get_preferred_size()
-            w, h = natural_size.width, natural_size.height
-
-            if self._orientation == Gtk.Orientation.HORIZONTAL:
-                width += w
-                height = max(height, h)
-                # Store the minimum weight for usage in do_size_allocate
-                item.min_size = w
-            else:
-                width = max(width, w)
-                height += h
-                # Store the minimum weight for usage in do_size_allocate
-                item.min_size = h
+            item_min, item_nat = item.child.get_preferred_height()
+            min_height += item_min
+            nat_height += item_nat
+            # Store the minimum weight for usage in do_size_allocate
+            item.min_size = nat_height
 
         # Add handles
-        if self._orientation == Gtk.Orientation.HORIZONTAL:
-            width += self._get_n_handles() * self._handle_size
-        else:
-            height += self._get_n_handles() * self._handle_size
+        min_height += self._get_n_handles() * self._handle_size
+        nat_height += self._get_n_handles() * self._handle_size
 
-        # Done
-        requisition.width = width
-        requisition.height = height
+        return min_height, nat_height
+
+    def do_get_preferred_width(self):
+        """Calculates the container's initial minimum and natural width. While
+        this call is specific to width-for-height requests (that we requested
+        not to get) we cannot be certain that our wishes are granted, so
+        we must implement this method as well. Returns the the decoration area
+        width.
+        """
+        # Start with nothing
+        min_width = nat_width = 0
+
+        # Add child widgets
+        for item in self._items:
+            item_min, item_nat = item.child.get_preferred_width()
+            min_width += item_min
+            nat_width += item_nat
+            # Store the minimum weight for usage in do_size_allocate
+            item.min_size = item_nat
+
+        # Add handles
+        min_width += self._get_n_handles() * self._handle_size
+        nat_width += self._get_n_handles() * self._handle_size
+
+        return min_width, nat_width
+
+    def do_get_preferred_height_for_width(self, width):
+        """Returns this container's minimum and natural height if it would be
+        given the specified width. While this call is specific to
+        height-for-width requests (that we requested not to get) we cannot be
+        certain that our wishes are granted, so we must implement this method
+        as well. Since we really want to be the same size always, we simply
+        return do_get_preferred_height.
+
+        @param width The given width, as int. Ignored.
+        """
+        return self.do_get_preferred_height()
+
+    def do_get_preferred_width_for_height(self, height):
+        """Returns this container's minimum and natural width if it would be
+        given the specified height. While this call is specific to
+        width-for-height requests (that we requested not to get) we cannot be
+        certain that our wishes are granted, so we must implement this method
+        as well. Since we really want to be the same size always, we simply
+        return do_get_preferred_width.
+
+        @param height The given height, as int. Ignored.
+        """
+        return self.do_get_preferred_width()
 
     def do_size_allocate(self, allocation):
         ####################################################################

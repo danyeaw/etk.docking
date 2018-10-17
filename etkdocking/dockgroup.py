@@ -204,67 +204,166 @@ class DockGroup(Gtk.Container):
         self.window.hide()
         Gtk.Container.do_unmap(self)
 
-    def do_size_request(self, requisition):
+    def do_get_request_mode(self):
+        """Returns whether the container prefers a height-for-width or a
+        width-for-height layout. DockGroup doesn't trade width for height or
+        height for width so we return CONSTANT_SIZE.
+        """
+        return Gtk.SizeRequestMode.CONSTANT_SIZE
 
-        # Start with a zero sized decoration area
-        dw = dh = 0
+    def do_get_preferred_height(self):
+        """Calculates the container's initial minimum and natural height. While
+        this call is specific to width-for-height requests (that we requested
+        not to get) we cannot be certain that our wishes are granted, so
+        we must implement this method as well. Returns the the decoration area
+        height.
+        """
+        # Start with a zero sized decoration area height
+        dh_min = dh_nat = 0
 
-        # Compute width and height for each tab, but only add
-        # current item tab size to the decoration area requisition as
-        # the other tabs can be hidden when we don't get enough room
-        # in the allocation fase.
         for tab in self._tabs:
-            min_size, natural_size = tab.image.get_preferred_size()
-            iw, ih = natural_size.width, natural_size.height
-            min_size, natural_size = tab.label.get_preferred_size()
-            lw, lh = natural_size.width, natural_size.height
-            min_size, natural_size = tab.button.get_preferred_size()
-            bw, bh = natural_size.width, natural_size.height
+            tab_img_min, tab_img_nat = tab.image.get_preferred_height()
+            tab_label_min, tab_label_nat = tab.label.get_preferred_height()
+            tab_button_min, tab_button_nat = tab.button.get_preferred_height()
 
-            tab.area.width = (self._frame_width + self._spacing +
-                              iw + self._spacing + lw + self._spacing +
-                              bw + self._spacing + self._frame_width)
-            tab.area.height = (self._frame_width + self._spacing +
-                               max(ih, lh, bh) +
-                               self._spacing + self._frame_width)
+            tab.area.height_min = (
+                    self._frame_width +
+                    self._spacing +
+                    max(tab_img_min, tab_label_min, tab_button_min) +
+                    self._spacing +
+                    self._frame_width
+            )
+            dh_min = max(dh_min, tab.area.height_min)
 
-            if tab == self._current_tab:
-                dw = tab.area.width - lw
-
-            dh = max(dh, tab.area.height)
+            tab.area.height_nat = (
+                    self._frame_width +
+                    self._spacing +
+                    max(tab_img_nat, tab_label_nat, tab_button_nat) +
+                    self._spacing +
+                    self._frame_width
+            )
+            dh_nat = max(dh_nat, tab.area.height_nat)
 
         # Add decoration button sizes to the decoration area
-        min_size, natural_size = self._list_button.get_preferred_size()
-        list_w, list_h = natural_size.width, natural_size.height
-        min_size, natural_size = self._min_button.get_preferred_size()
-        min_w, min_h = natural_size.width, natural_size.height
-        min_size, natural_size = self._max_button.get_preferred_size()
-        max_w, max_h = natural_size.width, natural_size.height
+        list_button_min, list_button_nat = self._list_button.get_preferred_height()
+        min_button_min, min_button_nat = self._min_button.get_preferred_height()
+        max_button_min, max_button_nat = self._max_button.get_preferred_height()
 
-        dw += (self._spacing + list_w + min_w + max_w +
-               self._spacing + self._frame_width)
-        dh = max(dh,
-                 (self._spacing + list_h + self._spacing),
-                 (self._spacing + min_h + self._spacing),
-                 (self._spacing + max_h + self._spacing))
+        dh_min = max(dh_min,
+                 (self._spacing + list_button_min + self._spacing),
+                 (self._spacing + min_button_min + self._spacing),
+                 (self._spacing + max_button_min + self._spacing))
+
+        dh_nat = max(dh_nat,
+                     (self._spacing + list_button_nat + self._spacing),
+                     (self._spacing + min_button_nat + self._spacing),
+                     (self._spacing + max_button_nat + self._spacing))
 
         # Store decoration area size for later usage
-        self._decoration_area.width = dw
-        self._decoration_area.height = dh
+        self._decoration_area.height = dh_nat
 
         # Current item: we only honor the height request
         if self._current_tab:
-            ih = self._current_tab.item.get_preferred_size()[1]
+            ih_min, ih_nat = self._current_tab.item.get_preferred_height()
         else:
-            ih = 0
+            ih_min = ih_nat = 0
 
-        ih += self._frame_width + 2 * self.border_width
+        border_width = self.get_border_width()
+        ih_min += self._frame_width + 2 * border_width
+        ih_nat += self._frame_width + 2 * border_width
 
-        # Compute total size requisition
-        requisition.width = dw
-        requisition.height = dh + ih
+        minimum_height = dh_min + ih_min
+        natural_height = dh_nat + ih_nat
+        return minimum_height, natural_height
+
+    def do_get_preferred_width(self):
+        """Calculates the container's initial minimum and natural width. While
+        this call is specific to width-for-height requests (that we requested
+        not to get) we cannot be certain that our wishes are granted, so
+        we must implement this method as well. Returns the the decoration area
+        width.
+        """
+        # Start with a zero sized decoration width
+        dw_min = dw_nat = 0
+
+        # Compute width for each tab, but only add
+        # current item tab size to the decoration area requisition as
+        # the other tabs can be hidden when we don't get enough room
+        # in the allocation phase.
+        for tab in self._tabs:
+            tab_img_min, tab_img_nat = tab.image.get_preferred_width()
+            tab_label_min, tab_label_nat = tab.label.get_preferred_width()
+            tab_button_min, tab_button_nat = tab.button.get_preferred_width()
+
+            tab.area.width_min = (
+                    self._frame_width +
+                    self._spacing + tab_img_min +
+                    self._spacing + tab_button_min +
+                    self._spacing + tab_label_min +
+                    self._spacing + self._frame_width
+            )
+            tab.area.width_nat = (
+                    self._frame_width +
+                    self._spacing + tab_img_nat +
+                    self._spacing + tab_button_nat +
+                    self._spacing + tab_label_nat +
+                    self._spacing + self._frame_width
+            )
+
+            if tab == self._current_tab:
+                dw_min = tab.area.width_min - tab_label_min
+                dw_nat = tab.area.width_nat - tab_label_nat
+
+        # Add decoration button sizes to the decoration area
+        list_button_min, list_button_nat = self._list_button.get_preferred_width()
+        min_button_min, min_button_nat = self._min_button.get_preferred_width()
+        max_button_min, max_button_nat = self._max_button.get_preferred_width()
+
+        dw_min += (
+                self._spacing + list_button_min + min_button_min + max_button_min + self._spacing + self._frame_width
+        )
+        dw_nat += (
+                self._spacing + list_button_nat + min_button_nat + max_button_nat + self._spacing + self._frame_width
+        )
+
+        # Store decoration area size for later usage
+        self._decoration_area.width = dw_nat
+
+        minimum_width = dw_min
+        natural_width = dw_nat
+        return minimum_width, natural_width
+
+    def do_get_preferred_height_for_width(self, width):
+        """Returns this container's minimum and natural height if it would be
+        given the specified width. While this call is specific to
+        height-for-width requests (that we requested not to get) we cannot be
+        certain that our wishes are granted, so we must implement this method
+        as well. Since we really want to be the same size always, we simply
+        return do_get_preferred_height.
+
+        @param width The given width, as int. Ignored.
+        """
+        return self.do_get_preferred_height()
+
+    def do_get_preferred_width_for_height(self, height):
+        """Returns this container's minimum and natural width if it would be
+        given the specified height. While this call is specific to
+        width-for-height requests (that we requested not to get) we cannot be
+        certain that our wishes are granted, so we must implement this method
+        as well. Since we really want to be the same size always, we simply
+        return do_get_preferred_width.
+
+        @param height The given height, as int. Ignored.
+        """
+        return self.do_get_preferred_width()
 
     def do_size_allocate(self, allocation):
+        """Assigns a size and position to the child widgets. Children may adjust
+        the given allocation in the adjust_size_allocation virtual method.
+
+        @param allocation The position and size allocated to this container, as
+        Gdk.Rectangle
+        """
         self.allocation = allocation
 
         if self.get_realized():
@@ -436,11 +535,12 @@ class DockGroup(Gtk.Container):
 
         if self._visible_tabs:
             # Draw border
-            c.set_line_width(self.border_width)
-            c.rectangle(self._frame_width + old_div(self.border_width, 2),
-                        self._decoration_area.height + old_div(self.border_width, 2),
-                        a.width - (2 * self._frame_width) - self.border_width,
-                        a.height - self._decoration_area.height - self._frame_width - self.border_width)
+            border_width = self.get_border_width()
+            c.set_line_width(border_width)
+            c.rectangle(self._frame_width + old_div(border_width, 2),
+                        self._decoration_area.height + old_div(border_width, 2),
+                        a.width - (2 * self._frame_width) - border_width,
+                        a.height - self._decoration_area.height - self._frame_width - border_width)
             c.set_source_rgb(*tab_light)
             c.stroke()
 
