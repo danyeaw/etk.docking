@@ -306,7 +306,7 @@ class DockPaned(Gtk.Container):
 
     def _item_for_child(self, child):
         for item in self._items:
-            if item.get_child() is child:
+            if item.child is child:
                 return item
         raise ValueError('child widget %s not in paned' % child)
 
@@ -447,6 +447,8 @@ class DockPaned(Gtk.Container):
             return self.get_handle_size()
         elif pspec.name == 'orientation':
             return self.get_orientation()
+        elif pspec.name == 'weight':
+            return self.get_weight()
 
     def do_set_property(self, pspec, value):
         if pspec.name == 'handle-size':
@@ -490,19 +492,19 @@ class DockPaned(Gtk.Container):
         self._vcursor = Gdk.Cursor.new_from_name(display=self.get_display(), name="ns-resize")
 
     def do_unrealize(self):
-        self.set_realized(False)
         self._hcursor = None
         self._vcursor = None
         self.window.set_user_data(None)
         self.window.destroy()
+        Gtk.Container.do_unrealize(self)
 
     def do_map(self):
         self.window.show()
-        self.set_mapped(True)
+        Gtk.Container.do_map(self)
 
     def do_unmap(self):
-        self.set_mapped(False)
         self.window.hide()
+        Gtk.Container.do_unmap(self)
 
     def do_get_request_mode(self):
         """Returns whether the container prefers a height-for-width or a
@@ -610,7 +612,6 @@ class DockPaned(Gtk.Container):
                 rect = Gdk.Rectangle()
                 rect.x = cx
                 rect.y = cy
-                child.weight = self.get_property('weight')
 
                 if isinstance(child, _DockPanedItem):
                     s = round(child.weight * size)
@@ -651,15 +652,13 @@ class DockPaned(Gtk.Container):
         if self.get_realized():
             self.window.move_resize(*allocation)
 
-    def do_expose_event(self, event):
+    def do_draw(self, cr):
         for item in self._items:
-            self.propagate_expose(item.get_child(), event)
+            self.propagate_draw(item.child, cr)
 
         for handle in self._handles:
             # TODO: render themed handle if not using compact layout
             pass
-
-        return False
 
     def do_leave_notify_event(self, event):
         # Reset cursor

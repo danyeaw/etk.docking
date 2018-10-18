@@ -75,8 +75,7 @@ class CompactButton(Gtk.Widget):
 
     def __init__(self, icon_name_normal='', size=16, has_frame=True):
         Gtk.Widget.__init__(self)
-        # TODO this is PyGTK specific, and no equivalent in PyGi. Does it need to be GInitiallyUnowned?
-        # self.set_flags(self.flags() | Gtk.NO_WINDOW)
+        self.set_has_window(False)
 
         # Initialize logging
         self.log = getLogger('%s.%s' % (self.__gtype_name__, hex(id(self))))
@@ -205,25 +204,19 @@ class CompactButton(Gtk.Widget):
         self._input_window = Gdk.Window(self.get_parent_window(), attr, attr_mask)
         self._input_window.set_user_data(self)
         self._refresh_icons()
-        self.set_window(self._input_window)
-        self.set_realized(True)
 
     def do_unrealize(self):
-        self.set_realized(False)
         self._input_window.set_user_data(None)
         self._input_window.destroy()
+        Gtk.Widget.do_unrealize(self)
 
     def do_map(self):
         self._input_window.show()
         self.set_mapped(True)
 
     def do_unmap(self):
-        self.set_mapped(False)
         self._input_window.hide()
-
-    def do_size_request(self, requisition):
-        requisition.width = self._size
-        requisition.height = self._size
+        Gtk.Widget.do_unmap(self)
 
     def do_size_allocate(self, allocation):
         self.allocation = allocation
@@ -231,56 +224,61 @@ class CompactButton(Gtk.Widget):
         if self.get_realized():
             self._input_window.move_resize(*self.allocation)
 
-    # TODO PyGObject no longer uses this virtual method
-    def do_expose_event(self, event):
+    def do_draw(self, cr):
         # Draw icon
-        if self.state == Gtk.StateType.NORMAL:
-            pixbuf = self._icon_normal
-            x = self.allocation.x
-            y = self.allocation.y
-        elif self.state == Gtk.StateType.PRELIGHT:
+        if self.state == Gtk.StateFlags.PRELIGHT:
             pixbuf = self._icon_prelight
             x = self.allocation.x
             y = self.allocation.y
-        elif self.state == Gtk.StateType.ACTIVE:
+        elif self.state == Gtk.StateFlags.ACTIVE:
             pixbuf = self._icon_active
             x = self.allocation.x + 1
             y = self.allocation.y + 1
+        else:  # Gtk.StateFlags.NORMAL and all others
+            pixbuf = self._icon_normal
+            x = self.allocation.x
+            y = self.allocation.y
 
-        event.window.draw_pixbuf(self.style.base_gc[self.state], pixbuf, 0, 0, x, y)
+        Gdk.cairo_set_source_pixbuf(cr, pixbuf, x, y)
+        cr.paint()
 
         # Draw frame
-        if self._has_frame and self.state != Gtk.StateType.NORMAL:
-            event.window.draw_rectangle(self.style.dark_gc[self.state], False,
-                                        self.allocation.x,
-                                        self.allocation.y,
-                                        self.allocation.width - 1,
-                                        self.allocation.height - 1)
-
-        return False
+        if self._has_frame and self.state != Gtk.StateFlags.NORMAL:
+            style_provider = Gtk.CssProvider()
+            style_context = self.get_style_context()
+            style_context.add_provider(style_provider, Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
+            style_context.set_state(self.state)
+            Gtk.render_frame(
+                context=style_context,
+                cr=cr,
+                x=self.allocation.x,
+                y=self.allocation.y,
+                width=self.allocation.width - 1,
+                height=self.allocation.height - 1
+            )
 
     def do_enter_notify_event(self, event):
         self._entered = True
-        self.set_state(Gtk.StateType.PRELIGHT)
+        self.set_state(Gtk.StateFlags.PRELIGHT)
         self.queue_draw()
         return True
 
     def do_leave_notify_event(self, event):
         self._entered = False
-        self.set_state(Gtk.StateType.NORMAL)
+        self.set_state(Gtk.StateFlags.NORMAL)
         self.queue_draw()
         return True
 
     def do_button_press_event(self, event):
         if event.button == 1:
-            self.set_state(Gtk.StateType.ACTIVE)
+            self.set_state(Gtk.StateFlags.ACTIVE)
             self.queue_draw()
 
         return True
 
     def do_button_release_event(self, event):
         if event.button == 1 and self._entered == True:
-            self.set_state(Gtk.StateType.PRELIGHT)
+            self.set_state(Gtk.StateFlags.PRELIGHT)
             self.emit('clicked')
             self.queue_draw()
 

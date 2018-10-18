@@ -613,29 +613,29 @@ def new(class_, old=None, layout=None):
     return new
 
 
-def dock_group_expose_highlight(self, event):
+def dock_group_draw_highlight(self, da, ctx):
+    alloc = da.get_allocation()
     try:
         tab = self._visible_tabs[self._drop_tab_index]
     except TypeError:
-        a = event.area
+        a = alloc
     else:
         if tab is self._current_tab:
-            a = event.area
+            a = alloc
         else:
             a = tab.area
 
-    cr = self.window.cairo_create()
-    cr.set_source_rgb(0, 0, 0)
-    cr.set_line_width(1.0)
-    cr.rectangle(a.x + 0.5, a.y + 0.5, a.width - 1, a.height - 1)
-    cr.stroke()
+    ctx = self.window.cairo_create()
+    ctx.set_source_rgb(0, 0, 0)
+    ctx.set_line_width(1.0)
+    ctx.rectangle(a.x + 0.5, a.y + 0.5, a.width - 1, a.height - 1)
+    ctx.stroke()
 
 
 def dock_group_highlight(self):
-    if not hasattr(self, '_expose_event_id'):
-        self.log.debug('attaching expose event')
-        self._expose_event_id = self.connect_after('expose-event',
-                                                   dock_group_expose_highlight)
+    if not hasattr(self, '_draw_event_id'):
+        self.log.debug('attaching draw event')
+        self._draw_event_id = self.connect_after('draw', dock_group_draw_highlight)
     self.queue_draw()
 
 
@@ -643,8 +643,8 @@ def dock_unhighlight(self):
     self.queue_draw()
 
     try:
-        self.disconnect(self._expose_event_id)
-        del self._expose_event_id
+        self.disconnect(self._draw_event_id)
+        del self._draw_event_id
     except AttributeError as e:
         self.log.debug(e, exc_info=True)
 
@@ -724,7 +724,7 @@ def dock_group_drag_failed(self, context, result):
 ################################################################################
 # DockPaned
 ################################################################################
-def dock_paned_expose_highlight(self, event):
+def dock_paned_draw_highlight(self, da, ctx):
     try:
         handle = self._handles[self._drop_handle_index]
     except (AttributeError, IndexError, TypeError) as e:
@@ -733,18 +733,17 @@ def dock_paned_expose_highlight(self, event):
     else:
         a = handle.area
 
-    cr = self.window.cairo_create()
-    cr.set_source_rgb(0, 0, 0)
-    cr.set_line_width(1.0)
-    cr.rectangle(a.x + 0.5, a.y + 0.5, a.width - 1, a.height - 1)
-    cr.stroke()
+    ctx.set_source_rgb(0, 0, 0)
+    ctx.set_line_width(1.0)
+    ctx.rectangle(a.x + 0.5, a.y + 0.5, a.width - 1, a.height - 1)
+    ctx.stroke()
 
 
 def dock_paned_highlight(self):
-    if not hasattr(self, '_expose_event_id'):
-        self.log.debug('attaching expose event')
-        self._expose_event_id = self.connect_after('expose-event',
-                                                   dock_paned_expose_highlight)
+    if not hasattr(self, '_draw_event_id'):
+        self.log.debug('attaching draw event')
+        self._draw_event_id = self.connect_after('draw',
+                                                 dock_paned_draw_highlight)
     self.queue_draw()
 
 

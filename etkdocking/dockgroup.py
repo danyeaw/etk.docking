@@ -120,7 +120,7 @@ class DockGroup(Gtk.Container):
         self._tabs = []
         self._visible_tabs = []
         self._current_tab = None
-        self._tab_state = Gtk.StateType.SELECTED
+        self._tab_state = Gtk.StateFlags.SELECTED
         self.dragcontext = DockDragContext()
         # TODO: Deprecated in Gtk 3.10, composite children are handled by Gtk.WidgetClass.set_template()
         Gtk.Widget.push_composite_child()
@@ -149,7 +149,7 @@ class DockGroup(Gtk.Container):
     # GtkWidget
     ############################################################################
     def do_realize(self):
-        self.get_realized()
+        self.set_realized(True)
         allocation = self.get_allocation()
         attr = Gdk.WindowAttr()
         attr.x = allocation.x
@@ -498,57 +498,49 @@ class DockGroup(Gtk.Container):
         # assert not self._current_tab or self._current_tab in self._visible_tabs
         self.queue_draw_area(0, 0, self.allocation.width, self.allocation.height)
 
-    # TODO PyGObject no longer uses this virtual method
-    def do_expose_event(self, event):
-        # Prepare colors
-        bg = self.style.bg[self.state]
-        bg = (bg.red_float, bg.green_float, bg.blue_float)
-        dark = self.style.dark[self.state]
-        dark = (dark.red_float, dark.green_float, dark.blue_float)
-        tab_light = self.style.text_aa[self._tab_state]
-        tab_light = (tab_light.red_float, tab_light.green_float, tab_light.blue_float)
-        tab_dark = HslColor(self.style.text_aa[Gtk.StateType.SELECTED])
-        tab_dark.set_l(0.9)
-        tab_dark = tab_dark.get_rgb_float()
+    def do_draw(self, cr):
+        style_provider = Gtk.CssProvider()
+        style_context = self.get_style_context()
+        style_context.add_provider(style_provider, Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
 
-        # Create cairo context
-        c = self.window.cairo_create()
-
-        # Restrict context to the exposed area, avoid extra work
-        c.rectangle(event.area.x, event.area.y, event.area.width, event.area.height)
-        c.clip_preserve()
+        a = self.allocation
 
         # Draw background
-        c.set_source_rgb(*bg)
-        c.fill()
+        Gtk.render_backgound(context=style_context, cr=cr, x=0.5, y=0.5, width=a.width, height=a.height)
 
         # Draw frame
-        a = self.allocation
-        c.set_line_width(self._frame_width)
-        c.rectangle(0.5, 0.5, a.width - 1, a.height - 1)
-        c.set_source_rgb(*dark)
-        c.stroke()
-        c.move_to(0.5, self._decoration_area.height - 0.5)
-        c.line_to(a.width + 0.5, self._decoration_area.height - 0.5)
-        c.set_source_rgb(*dark)
-        c.stroke()
+        style_context.save()
+        style_context.set_state(self.state)
+        style_provider.load_from_data(b"* { border-width: {}; }".format(self._frame_width))
+        Gtk.render_frame(context=style_context, cr=cr, x=0.5, y=0.5, width=a.width, height=a.height)
+        style_context.restore()
+
+        # Draw decoration
+        cr.save()
+        cr.move_to(0.5, self._decoration_area.height - 0.5)
+        cr.line_to(a.width + 0.5, self._decoration_area.height - 0.5)
+        cr.set_source_rgba(Gtk.STYLE_PROPERTY_BORDER_COLOR)
+        cr.stroke()
+        cr.restore()
 
         if self._visible_tabs:
             # Draw border
-            border_width = self.get_border_width()
-            c.set_line_width(border_width)
-            c.rectangle(self._frame_width + old_div(border_width, 2),
-                        self._decoration_area.height + old_div(border_width, 2),
-                        a.width - (2 * self._frame_width) - border_width,
-                        a.height - self._decoration_area.height - self._frame_width - border_width)
-            c.set_source_rgb(*tab_light)
-            c.stroke()
+            style_context.save()
+            style_context.set_state(self._tab_state)
+            style_provider.save()
+            style_provider.load_from_data(b"* { border-width: {}; }".format(self.border_width))
+            Gtk.render_frame(
+                context=style_context,
+                cr=cr,
+                x=self._frame_width + self.border_width / 2,
+                y=self._decoration_area.height + self.border_width / 2,
+                width=a.width - 2 * self._frame_width - self.border_width,
+                height=a.height - self._decoration_area.height - self._frame_width - self.border_width)
+            style_provider.restore()
 
             # Draw tabs
-            c.set_line_width(self._frame_width)
-
             try:
-                # Fails if expose event happens before size request/allocate when a new
+                # Fails if draw happens before size request/allocate when a new
                 # current_tab has been selected.
                 visible_index = self._visible_tabs.index(self._current_tab)
             except ValueError:
@@ -561,48 +553,59 @@ class DockGroup(Gtk.Container):
                 th = tab.area.height
 
                 if index < visible_index and index != 0:
-                    c.move_to(tx + 0.5, ty + th)
-                    c.line_to(tx + 0.5, ty + 8.5)
-                    c.arc(tx + 8.5, 8.5, 8, 180 * (old_div(pi, 180)), 270 * (old_div(pi, 180)))
-                    c.set_source_rgb(*dark)
-                    c.stroke()
+                    cr.save()
+                    cr.move_to(tx + 0.5, ty + th)
+                    cr.line_to(tx + 0.5, ty + 8.5)
+                    cr.arc(tx + 8.5, 8.5, 8, 180 * pi / 180, 270 * pi / 180)
+                    cr.set_source_rgba(Gtk.STYLE_PROPERTY_BORDER_COLOR)
+                    cr.stroke()
+                    cr.restore()
                 elif index > visible_index:
-                    c.arc(tx + tw - 8.5, 8.5, 8, 270 * (old_div(pi, 180)), 360 * (old_div(pi, 180)))
-                    c.line_to(tx + tw - 0.5, ty + th)
-                    c.set_source_rgb(*dark)
-                    c.stroke()
+                    cr.save()
+                    cr.arc(tx + tw - 8.5, 8.5, 8, 270 * pi / 180, 360 * pi / 180)
+                    cr.line_to(tx + tw - 0.5, ty + th)
+                    cr.set_source_rgba(Gtk.STYLE_PROPERTY_BORDER_COLOR)
+                    cr.stroke()
+                    cr.restore()
                 elif index == visible_index:
-                    c.move_to(tx + 0.5, ty + th)
+                    cr.save()
+                    cr.move_to(tx + 0.5, ty + th)
 
                     if visible_index == 0:
-                        c.line_to(tx + 0.5, ty + 0.5)
-                        c.line_to(tx + tw - 8.5, ty + 0.5)
+                        cr.line_to(tx + 0.5, ty + 0.5)
+                        cr.line_to(tx + tw - 8.5, ty + 0.5)
                     else:
-                        c.line_to(tx + 0.5, ty + 8.5)
-                        c.arc(tx + 8.5, 8.5, 8, 180 * (old_div(pi, 180)), 270 * (old_div(pi, 180)))
-                        c.line_to(tx + tw - 8.5, ty + 0.5)
+                        cr.line_to(tx + 0.5, ty + 8.5)
+                        cr.arc(tx + 8.5, 8.5, 8, 180 * (old_div(pi, 180)), 270 * (old_div(pi, 180)))
+                        cr.line_to(tx + tw - 8.5, ty + 0.5)
 
-                    c.arc(tx + tw - 8.5, 8.5, 8, 270 * (old_div(pi, 180)), 360 * (old_div(pi, 180)))
-                    c.line_to(tx + tw - 0.5, ty + th)
+                    cr.arc(tx + tw - 8.5, 8.5, 8, 270 * (old_div(pi, 180)), 360 * (old_div(pi, 180)))
+                    cr.line_to(tx + tw - 0.5, ty + th)
                     linear = cairo.LinearGradient(0.5, 0.5, 0.5, th)
-                    linear.add_color_stop_rgb(1, *tab_light)
+                    linear.add_color_stop_rgba(1, *Gtk.STYLE_PROPERTY_BORDER_COLOR)
+                    style_context.save()
+                    style_context.set_state(Gtk.StateFlags.SELECTED)
+                    tab_dark = HslColor(Gtk.STYLE_PROPERTY_BORDER_COLOR.to_color())
+                    tab_dark.set_l(0.9)
+                    tab_dark = tab_dark.get_rgb_float()
                     linear.add_color_stop_rgb(0, *tab_dark)
-                    c.set_source(linear)
-                    c.fill_preserve()
-                    c.set_source_rgb(*dark)
-                    c.stroke()
+                    style_context.restore()
+                    cr.set_source(linear)
+                    cr.fill_preserve()
+                    cr.set_source_rgba(Gtk.STYLE_PROPERTY_BORDER_COLOR)
+                    cr.stroke()
+                    cr.restore()
 
-                    self.propagate_expose(self._current_tab.item, event)
+                    self.propagate_draw(self._current_tab.item, cr)
 
-                self.propagate_expose(tab.image, event)
-                self.propagate_expose(tab.label, event)
-                self.propagate_expose(tab.button, event)
+                self.propagate_draw(tab.image, cr)
+                self.propagate_draw(tab.label, cr)
+                self.propagate_draw(tab.button, cr)
+            style_context.restore()
 
-        self.propagate_expose(self._list_button, event)
-        self.propagate_expose(self._min_button, event)
-        self.propagate_expose(self._max_button, event)
-
-        return False
+        self.propagate_draw(self._list_button, cr)
+        self.propagate_draw(self._min_button, cr)
+        self.propagate_draw(self._max_button, cr)
 
     def do_button_press_event(self, event):
         '''
@@ -766,7 +769,7 @@ class DockGroup(Gtk.Container):
         For group movement, no special action is taken.
         '''
         # Set some data so the DnD process continues
-        selection_data.set(Gdk.atom_intern(DRAG_TARGET_ITEM_LIST.target),
+        selection_data.set(Gdk.atom_intern(atom_name=DRAG_TARGET_ITEM_LIST.target, only_if_exists=False),
                            8,
                            '%d tabs' % len(self.dragcontext.dragged_object))
 
@@ -949,7 +952,7 @@ class DockGroup(Gtk.Container):
 
     def set_tab_state(self, tab_state):
         '''
-        Define the tab state. Normally that will be ``Gtk.StateType.SELECTED``, but a
+        Define the tab state. Normally that will be ``Gtk.StateFlags.SELECTED``, but a
         different state can be set if required.
         '''
         self._tab_state = tab_state
