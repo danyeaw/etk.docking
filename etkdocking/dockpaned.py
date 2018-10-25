@@ -141,6 +141,7 @@ class DockPaned(Gtk.Container):
         # Initialize properties
         self.set_handle_size(4)
         self.set_orientation(Gtk.Orientation.HORIZONTAL)
+        self.set_weight(FALLBACK_WEIGHT)
 
     ############################################################################
     # Private
@@ -455,6 +456,8 @@ class DockPaned(Gtk.Container):
             self.set_handle_size(value)
         elif pspec.name == 'orientation':
             self.set_orientation(value)
+        elif pspec.name == 'weight':
+            self.set_weight(value)
 
     ############################################################################
     # GtkWidget
@@ -480,7 +483,7 @@ class DockPaned(Gtk.Container):
                      )
         self.window = Gdk.Window(self.get_parent_window(), attr, attr_mask)
         self.window.set_user_data(self)
-        self.set_window(self.window)
+        # self.set_window(self.window)
         self.set_realized(True)
 
         # Set parent window on all child widgets
@@ -650,7 +653,7 @@ class DockPaned(Gtk.Container):
 
         # Move/Resize our GdkWindow
         if self.get_realized():
-            self.window.move_resize(*allocation)
+            self.window.move_resize(x=allocation.x, y=allocation.y, width=allocation.width, height=allocation.height)
 
     def do_draw(self, cr):
         for item in self._items:
@@ -763,19 +766,6 @@ class DockPaned(Gtk.Container):
         except AttributeError:
             pass
 
-    def do_get_child_property(self, child, property_id, pspec):
-        item = self._item_for_child(child)
-
-        if pspec.name == 'weight':
-            return item.weight_request or item.weight
-
-    def do_set_child_property(self, child, property_id, value, pspec):
-        item = self._item_for_child(child)
-
-        if pspec.name == 'weight':
-            item.weight_request = value
-            child.child_notify('weight')
-
     ############################################################################
     # EtkDockPaned
     ############################################################################
@@ -814,6 +804,22 @@ class DockPaned(Gtk.Container):
         self._orientation = orientation
         self.notify('orientation')
         self.queue_resize()
+
+    def get_weight(self):
+        '''
+        :return: the weight of the dockpaned.
+
+        Retrieves the weight of the dockpaned.
+        '''
+        return self.weight
+
+    def set_weight(self, weight):
+        '''
+        :param weight: the dockpaned's new orientation.
+
+        Sets the weight of the dockpaned.
+        '''
+        self.weight = weight
 
     def append_item(self, child):
         '''
