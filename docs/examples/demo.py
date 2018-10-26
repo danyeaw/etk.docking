@@ -22,6 +22,7 @@
 
 from __future__ import absolute_import
 from __future__ import print_function
+
 import logging
 import random
 
@@ -29,21 +30,12 @@ import gi
 
 gi.require_version('Gtk', '3.0')
 
+from gi.repository import GLib
 from gi.repository import GObject
 from gi.repository import Gtk
-import Gtk.gdk as gdk
 from gi.repository import Pango
 
-try:
-    import etkdocking
-except ImportError:
-    # The lib directory is most likely not on PYTHONPATH, so add it here.
-    import os, sys
-
-    sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..')))
-    del os, sys
-finally:
-    from etkdocking import DockLayout, DockFrame, DockPaned, \
+from etkdocking import DockLayout, DockFrame, DockPaned, \
         DockGroup, DockItem, dockstore, settings
 
 
@@ -84,7 +76,7 @@ class MainWindow(Gtk.Window):
         # To change default group behaviour:
         # self.docklayout.settings[None].inherit_settings = False
 
-        vbox.pack_start(self.dockframe, True, True, 0)
+        vbox.pack_start(child=self.dockframe, expand=True, fill=True, padding=0)
 
         def on_item_closed(layout, group, item):
             item.destroy()
@@ -100,29 +92,29 @@ class MainWindow(Gtk.Window):
         ########################################################################
         # Testing Tools
         ########################################################################
-        adddibutton = Gtk.Button('Create docked items')
+        adddibutton = Gtk.Button.new_with_label('Create docked items')
         adddibutton.get_child().set_ellipsize(Pango.EllipsizeMode.MIDDLE)
         adddibutton.connect('clicked', self._on_add_di_button_clicked)
-        vbox.pack_start(adddibutton, False, False)
+        vbox.pack_start(child=adddibutton, expand=False, fill=False, padding=0)
 
-        orientationbutton = Gtk.Button('Switch Orientation')
+        orientationbutton = Gtk.Button.new_with_label('Switch Orientation')
         orientationbutton.get_child().set_ellipsize(Pango.EllipsizeMode.MIDDLE)
         orientationbutton.connect('clicked', self._on_orientation_button_clicked)
-        vbox.pack_start(orientationbutton, False, False)
+        vbox.pack_start(child=orientationbutton, expand=False, fill=False, padding=0)
 
         hbox = Gtk.HBox()
 
-        savebutton = Gtk.Button('Save layout')
+        savebutton = Gtk.Button.new_with_label('Save layout')
         savebutton.get_child().set_ellipsize(Pango.EllipsizeMode.MIDDLE)
         savebutton.connect('clicked', self._on_save_button_clicked)
-        hbox.pack_start(savebutton, True, True)
+        hbox.pack_start(child=savebutton, expand=True, fill=True, padding=0)
 
-        loadbutton = Gtk.Button('Load layout')
+        loadbutton = Gtk.Button.new_with_label('Load layout')
         loadbutton.get_child().set_ellipsize(Pango.EllipsizeMode.MIDDLE)
         loadbutton.connect('clicked', self._on_load_button_clicked)
-        hbox.pack_start(loadbutton, True, True)
+        hbox.pack_start(child=loadbutton, expand=True, fill=True, padding=0)
 
-        vbox.pack_start(hbox, False, False)
+        vbox.pack_start(child=hbox, expand=False, fill=False, padding=0)
 
         self.show_all()
 
@@ -243,8 +235,7 @@ def main():
     #    handler.addFilter(logging.Filter('EtkDockPaned'))
 
     # Initialize mainloop
-    GObject.threads_init()
-    mainloop = GObject.MainLoop()
+    mainloop = GLib.MainLoop()
 
     # Initialize mainwindow
     mainwindow = MainWindow()

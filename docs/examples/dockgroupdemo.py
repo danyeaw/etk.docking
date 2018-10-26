@@ -60,15 +60,15 @@ class MainWindow(Gtk.Window):
         # Docking
         ########################################################################
         self.dg = DockGroup()
-        vbox.pack_start(self.dg, True, True, 0)
+        vbox.pack_start(child=self.dg, expand=True, fill=True, padding=0)
 
         ########################################################################
         # Testing Tools
         ########################################################################
-        adddibutton = Gtk.Button('Create docked items')
+        adddibutton = Gtk.Button.new_with_label('Create docked items')
         adddibutton.get_child().set_ellipsize(Pango.EllipsizeMode.MIDDLE)
         adddibutton.connect('clicked', self._on_add_di_button_clicked)
-        vbox.pack_start(adddibutton, False, False)
+        vbox.pack_start(child=adddibutton, expand=False, fill=False, padding=0)
 
         self.show_all()
 
