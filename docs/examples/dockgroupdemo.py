@@ -22,6 +22,7 @@
 
 from __future__ import absolute_import
 
+from builtins import range
 import logging
 import random
 

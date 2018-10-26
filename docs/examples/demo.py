@@ -21,6 +21,7 @@
 
 
 from __future__ import absolute_import
+from __future__ import print_function
 import logging
 import random
 
@@ -87,12 +88,12 @@ class MainWindow(Gtk.Window):
 
         def on_item_closed(layout, group, item):
             item.destroy()
-            print 'closed item:', item.title
+            print('closed item:', item.title)
 
         self.docklayout.connect('item-closed', on_item_closed)
 
         def on_item_selected(layout, group, item):
-            print 'Selected item:', item.title
+            print('Selected item:', item.title)
 
         self.docklayout.connect('item-selected', on_item_selected)
 
@@ -215,7 +216,7 @@ class MainWindow(Gtk.Window):
             di = DockItem(title='New %s' % self.file_counter, title_tooltip_text=tooltip_text, stock_id=stock_id)
 
             def on_close(item):
-                print 'close:', item
+                print('close:', item)
 
             di.connect('close', on_close)
             di.add(child)

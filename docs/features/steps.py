@@ -1,3 +1,9 @@
+from __future__ import print_function
+from __future__ import division
+from builtins import next
+from builtins import range
+from past.utils import old_div
+from builtins import object
 import gi
 
 gi.require_version('Gtk', '3.0')
@@ -147,7 +153,7 @@ def drop_item_on_content(name):
 
     a = dest_group.allocation
 
-    x, y = a.x + a.width / 2, a.y + a.height / 2
+    x, y = a.x + old_div(a.width, 2), a.y + old_div(a.height, 2)
     drop_item(dest_group, x, y)
 
 
@@ -178,7 +184,7 @@ def drop_between_groups(group1name, group2name):
     assert index == [i.get_child() for i in paned._items].index(group2) - 1
     handle = paned._handles[index]
 
-    x, y = handle.area.x + handle.area.width / 2, handle.area.y + handle.area.height / 2
+    x, y = handle.area.x + old_div(handle.area.width, 2), handle.area.y + old_div(handle.area.height, 2)
     drop_item(paned, x, y)
 
 
@@ -186,7 +192,7 @@ def drop_between_groups(group1name, group2name):
 def drop_before_first_group():
     first_group = world.groups[0]
     a = first_group.allocation
-    x, y = a.x, a.y + a.height / 2
+    x, y = a.x, a.y + old_div(a.height, 2)
     drop_item(first_group, x, y)
 
 
@@ -194,7 +200,7 @@ def drop_before_first_group():
 def drop_it_outside_of_the_frame():
     source_widget, items = world.dragged_items
     drag_failed(source_widget, StubContext(source_widget, items), 1)
-    world.new_frame = world.layout.get_floating_frames().next()
+    world.new_frame = next(world.layout.get_floating_frames())
 
 
 @Then('item "([^"]+)" is part of "([^"]+)"')
@@ -224,8 +230,8 @@ def placed_before_tab(name):
     start_a_main_loop()
     assert len(world.dropped_items) == 1
     items = newgroup.visible_items
-    print 'it has been placed in just before', items.index(world.dropped_items[0]),
-    print items.index(item)
+    print('it has been placed in just before', items.index(world.dropped_items[0]), end=' ')
+    print(items.index(item))
     assert items
     assert items.index(world.dropped_items[0]) == items.index(item) - 1
 
