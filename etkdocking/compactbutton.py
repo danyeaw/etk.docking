@@ -222,7 +222,7 @@ class CompactButton(Gtk.Widget):
         self.allocation = allocation
 
         if self.get_realized():
-            self._input_window.move_resize(*self.allocation)
+            self._input_window.move_resize(allocation.x, allocation.y, allocation.width, allocation.height)
 
     def do_draw(self, cr):
         # Draw icon
