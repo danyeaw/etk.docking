@@ -511,7 +511,7 @@ class DockGroup(Gtk.Container):
         # Draw frame
         style_context.save()
         style_context.set_state(self.state)
-        style_provider.load_from_data(b"* { border-width: {}; }".format(self._frame_width))
+        style_provider.load_from_data(bytes("* { border-width: {}; }".format(self._frame_width), "utf-8"))
         Gtk.render_frame(context=style_context, cr=cr, x=0.5, y=0.5, width=a.width, height=a.height)
         style_context.restore()
 
@@ -528,7 +528,7 @@ class DockGroup(Gtk.Container):
             style_context.save()
             style_context.set_state(self._tab_state)
             style_provider.save()
-            style_provider.load_from_data(b"* { border-width: {}; }".format(self.border_width))
+            style_provider.load_from_data(bytes("* { border-width: {}; }".format(self.border_width), "utf-8"))
             Gtk.render_frame(
                 context=style_context,
                 cr=cr,
@@ -769,9 +769,11 @@ class DockGroup(Gtk.Container):
         For group movement, no special action is taken.
         '''
         # Set some data so the DnD process continues
-        selection_data.set(Gdk.atom_intern(atom_name=DRAG_TARGET_ITEM_LIST.target, only_if_exists=False),
-                           8,
-                           '%d tabs' % len(self.dragcontext.dragged_object))
+        selection_data.set(
+            type=Gdk.atom_intern(atom_name=DRAG_TARGET_ITEM_LIST.target, only_if_exists=False),
+            format=8,
+            data=bytes("{} tabs".format(len(self.dragcontext.dragged_object)), "utf-8")
+        )
 
     def do_drag_data_delete(self, context):
         '''
