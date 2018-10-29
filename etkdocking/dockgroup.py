@@ -517,7 +517,7 @@ class DockGroup(Gtk.Container):
         a = self.allocation
 
         # Draw background
-        Gtk.render_backgound(context=style_context, cr=cr, x=0.5, y=0.5, width=a.width, height=a.height)
+        Gtk.render_background(context=style_context, cr=cr, x=0.5, y=0.5, width=a.width, height=a.height)
 
         # Draw frame
         style_context.save()
