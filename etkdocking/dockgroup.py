@@ -708,7 +708,7 @@ class DockGroup(Gtk.Container):
                     self.dragcontext.dragged_object = [t.item for t in self._tabs]
 
                 if self.dragcontext.dragged_object:
-                    self.drag_begin([DRAG_TARGET_ITEM_LIST], Gdk.DragAction.MOVE,
+                    self.drag_begin(Gtk.TargetList.new([DRAG_TARGET_ITEM_LIST]), Gdk.DragAction.MOVE,
                                     self.dragcontext.source_button, event)
 
             # Update tab button visibility
