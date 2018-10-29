@@ -276,7 +276,7 @@ class DockLayout(GObject.GObject):
             drag_data = self._drag_data
 
             if drag_data and drag_data.drop_widget:
-                target = Gdk.atom_intern(DRAG_TARGET_ITEM_LIST.target)
+                target = Gdk.atom_intern(atom_name=DRAG_TARGET_ITEM_LIST.target, only_if_exists=True)
                 drag_data.drop_widget.drag_get_data(context, target, timestamp)
                 return True
 
