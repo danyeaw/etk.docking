@@ -146,6 +146,17 @@ class DockGroup(Gtk.Container):
         return len(self._tabs)
 
     ############################################################################
+    # GObject
+    ############################################################################
+    def do_get_property(self, pspec):
+        if pspec.name == 'weight':
+            return self.get_weight()
+
+    def do_set_property(self, pspec, value):
+        if pspec.name == 'weight':
+            self.set_weight(value)
+
+    ############################################################################
     # GtkWidget
     ############################################################################
     def do_realize(self):
