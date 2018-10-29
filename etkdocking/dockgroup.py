@@ -521,7 +521,6 @@ class DockGroup(Gtk.Container):
 
         # Draw frame
         style_context.save()
-        style_context.set_state(self.state)
         style_provider.load_from_data(bytes("* { border-width: {}; }".format(self._frame_width), "utf-8"))
         Gtk.render_frame(context=style_context, cr=cr, x=0.5, y=0.5, width=a.width, height=a.height)
         style_context.restore()
