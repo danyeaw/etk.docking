@@ -781,9 +781,9 @@ class DockGroup(Gtk.Container):
         '''
         # Set some data so the DnD process continues
         selection_data.set(
-            type=Gdk.atom_intern(atom_name=DRAG_TARGET_ITEM_LIST.target, only_if_exists=False),
-            format=8,
-            data=bytes("{} tabs".format(len(self.dragcontext.dragged_object)), "utf-8")
+            Gdk.atom_intern(atom_name=DRAG_TARGET_ITEM_LIST.target, only_if_exists=False),
+            8,
+            bytes("{} tabs".format(len(self.dragcontext.dragged_object)), "utf-8")
         )
 
     def do_drag_data_delete(self, context):
