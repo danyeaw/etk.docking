@@ -150,27 +150,103 @@ class DockItem(Gtk.Bin):
     stock = property(get_stock, set_stock)
 
     ############################################################################
+    # GtkContainer
+    ############################################################################
+    def do_child_type(self):
+        """Indicates that this container accepts any GTK+ widget."""
+        return Gtk.Widget.get_type()
+
+    def do_forall(self, include_internals, callback, *callback_data):
+        """Invokes the given callback on the child widget, with the given data.
+
+        @param include_internals Whether to run on internal children as well, as
+                                 boolean. Ignored, as there are no internal
+                                 children.
+        @param callback The callback to call on the child, as Gtk.Callback
+        @param callback_data The parameters to pass to the callback, as object
+                             or None
+        """
+        child = self.get_child()
+        if include_internals and child:
+            callback(child, *callback_data)
+
+    ############################################################################
     # GtkWidget
     ############################################################################
-    def do_size_request(self, requisition):
-        requisition.width = 0
-        requisition.height = 0
+    def do_get_request_mode(self):
+        """Returns whether the DockItem prefers a height-for-width or a
+        width-for-height layout. DockItem doesn't trade width for height or
+        height for width so we return CONSTANT_SIZE.
+        """
+        return Gtk.SizeRequestMode.CONSTANT_SIZE
 
-        if self.get_child() and self.get_child().props.visible:
-            (requisition.width, requisition.height) = self.child.size_request()
-            requisition.width += self.border_width * 2
-            requisition.height += self.border_width * 2
+    def do_get_preferred_height(self):
+        """Calculates the DockItem's initial minimum and natural height. While
+        this call is specific to width-for-height requests (that we requested
+        not to get) we cannot be certain that our wishes are granted, so we
+        must implement this method as well. Returns the preferred height of the
+        child widget with padding added for the border width.
+        """
+        minimum_height = 0
+        natural_height = 0
+        child = self.get_child()
+        if child and child.props.visible:
+            minimum_height, natural_height = child.get_preferred_height()
+            minimum_height += self.border_width * 2
+            natural_height += self.border_width * 2
+        return minimum_height, natural_height
+
+    def do_get_preferred_width(self):
+        """Calculates the DockItem's initial minimum and natural width. While
+        this call is specific to width-for-height requests (that we requested
+        not to get) we cannot be certain that our wishes are granted, so
+        we must implement this method as well. Returns the preferred width of
+        the child widget with padding added for the border width.
+        """
+        minimum_width = 0
+        natural_width = 0
+        child = self.get_child()
+        if child and child.props.visible:
+            minimum_width, natural_width = child.get_preferred_width()
+            minimum_width += self.border_width * 2
+            natural_width += self.border_width * 2
+        return minimum_width, natural_width
+
+    def do_get_preferred_height_for_width(self, width):
+        """Returns this DockItem's minimum and natural height if it would be
+        given the specified width. While this call is specific to
+        height-for-width requests (that we requested not to get) we cannot be
+        certain that our wishes are granted, so we must implement this method
+        as well. Since we really want to be the same size always, we simply
+        return do_get_preferred_height.
+
+        @param width The given width, as int. Ignored.
+        """
+        return self.do_get_preferred_height()
+
+    def do_get_preferred_width_for_height(self, height):
+        """Returns this DockItem's minimum and natural width if it would be
+        given the specified height. While this call is specific to
+        width-for-height requests (that we requested not to get) we cannot be
+        certain that our wishes are granted, so we must implement this method
+        as well. Since we really want to be the same size always, we simply
+        return do_get_preferred_width.
+
+        @param height The given height, as int. Ignored.
+        """
+        return self.do_get_preferred_width()
 
     def do_size_allocate(self, allocation):
         self.border_width = self.get_border_width()
+        child = self.get_child()
 
-        if self.get_child() and self.get_child().props.visible:
+        if child and child.props.visible:
             child_allocation = Gdk.Rectangle()
             child_allocation.x = allocation.x + self.border_width
             child_allocation.y = allocation.y + self.border_width
             child_allocation.width = allocation.width - (2 * self.border_width)
             child_allocation.height = allocation.height - (2 * self.border_width)
-            self.get_child().size_allocate(child_allocation)
+            self.child.size_allocate(child_allocation)
 
     ############################################################################
     # DockItem
