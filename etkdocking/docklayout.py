@@ -969,7 +969,7 @@ def dock_frame_magic_borders(self, context, x, y, timestamp):
     placeholder.set_size_request(a.width, a.height)
     placeholder.show()
 
-    current_child = self.get_children()[0]
+    current_child = self.get_child()
     assert current_child
 
     if min(x - border, y - border) < MAGIC_BORDER_SIZE:
