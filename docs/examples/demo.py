@@ -143,10 +143,11 @@ class MainWindow(Gtk.Window):
                 else:
                     paned.set_orientation(Gtk.Orientation.HORIZONTAL)
 
-                for child in paned.get_children():
+                child = paned.get_child()
+                if child:
                     switch_orientation(child)
 
-        paned = self.dockframe.get_children()[0]
+        paned = self.dockframe.get_child()
         switch_orientation(paned)
 
     def _on_save_button_clicked(self, button):
