@@ -116,6 +116,7 @@ class DockGroup(Gtk.Container):
         self._spacing = 3
         self._available_width = 0
         self._decoration_area = Gdk.Rectangle()
+        self.weight = None
 
         self._tabs = []
         self._visible_tabs = []
@@ -1242,6 +1243,22 @@ class DockGroup(Gtk.Container):
         tab = self._tabs[self.item_num(item)]
         self._tabs.remove(tab)
         self._tabs.insert(position, tab)
+
+    def get_weight(self):
+        """
+        :return: the weight of the DockGroup.
+
+        Retrieves the weight of the DockGroup.
+        """
+        return self.weight
+
+    def set_weight(self, weight):
+        """
+        :param weight: the DockGroup's new orientation.
+
+        Sets the weight of the DockGroup.
+        """
+        self.weight = weight
 
     ############################################################################
     # Property notification signal handlers
