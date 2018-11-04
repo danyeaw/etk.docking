@@ -966,7 +966,7 @@ def dock_frame_magic_borders(self, context, x, y, timestamp):
     placeholder = Placeholder()
 
     self.set_placeholder(placeholder)
-    placeholder.set_size_request(a.width, a.height)
+    placeholder.size_allocate(allocation)
     placeholder.show()
 
     current_child = self.get_child()
