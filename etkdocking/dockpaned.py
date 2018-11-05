@@ -401,7 +401,7 @@ class DockPaned(Gtk.Container):
 
         if min_size > size:
             sf = old_div(size, min_size)
-            self.log.warn('Size scaling required (factor=%f)' % sf)
+            self.log.warning('Size scaling required (factor=%f)' % sf)
         else:
             sf = 1.0
 
