@@ -342,15 +342,15 @@ class DockPaned(Gtk.Container):
         '''
         # Distribute delta_size amongst the items in shrink
         size = self._effective_size(self.allocation)
-        enlarge_alloc = enlarge.get_child().allocation
+        enlarge_alloc = enlarge.child.allocation
 
         for item in shrink:
 
-            available_size = self._size(item.get_child().allocation) - item.min_size
+            available_size = self._size(item.child.allocation) - item.min_size
 
             # Check if we can shrink (respecting the child's size_request)
             if available_size > 0:
-                a = item.get_child().allocation
+                a = item.child.allocation
 
                 # Can we adjust the whole delta or not?
                 if delta_size > available_size:
