@@ -36,7 +36,8 @@ DRAG_TARGET_ITEM_LIST = Gtk.TargetEntry.new("x-etk-docking/item-list", Gtk.Targe
 
 
 class DockDragContext(object):
-    '''
+    """Stores drag information during a drag operation.
+
     As we can't reliably use drag_source_set to initiate a drag operation
     (there's just to much information locked away in C structs - GtkDragSourceSite,
     GtkDragSourceInfo, GtkDragDestSite, GtkDragDestInfo, ... - that are not
@@ -44,7 +45,8 @@ class DockDragContext(object):
 
     This class is also used to store extra information about a drag operation
     in progress not available in the C structs mentioned above.
-    '''
+
+    """
     __slots__ = ['dragging',  # are we dragging or not (bool)
                  'dragged_object',  # object being dragged
                  'source_x',  # x coordinate starting a potential drag
@@ -67,6 +69,9 @@ class DockDragContext(object):
 
 
 class Placeholder(Gtk.DrawingArea):
+    """Acts as a placeholder when the DockLayout doesn't display any childrenA.
+
+    """
     __gtype_name__ = 'EtkDockPlaceholder'
 
     def __init__(self):
@@ -81,8 +86,9 @@ class Placeholder(Gtk.DrawingArea):
 
 
 class PlaceHolderWindow(Gtk.Window):
-    '''
-    The etk.dnd.PlaceHolderWindow is a Gtk.Window that can highlight an area
+    """Window that can highlight an area on screen for DnD.
+
+    The PlaceHolderWindow is a Gtk.Window that can highlight an area
     on screen. When a PlaceHolderWindow has no child widget an undecorated
     utility popup is shown drawing a transparent highlighting rectangle around
     the desired area. The location and size of the highlight rectangle can
@@ -95,7 +101,8 @@ class PlaceHolderWindow(Gtk.Window):
     This is used by the drag and drop implementation to mark a valid destination
     for the drag and drop operation while dragging and as the container window
     for teared off floating items.
-    '''
+
+    """
     __gtype_name__ = 'EtkDockPlaceHolderWindow'
 
     def __init__(self):
@@ -109,6 +116,18 @@ class PlaceHolderWindow(Gtk.Window):
         self.log = getLogger('%s.%s' % (self.__gtype_name__, hex(id(self))))
 
     def _create_shape(self, da, ctx):
+        """Draws a mask over the window.
+
+        This method is called by draw signal which is setup in the
+        do_size_allocate method to draw a mask on the window for highlighting.
+
+        Args:
+            da (Gtk.DrawingArea): The drawing area that is passed from the draw
+                signal.
+            ctx (cairo.Context): The cairo context that is passed from
+                the draw signal.
+
+        """
         width, height = self.get_size()
         mask = cairo.SolidPattern(255, 255, 255, 0)
         ctx.set_source_rgba(0, 0, 0, 1)
@@ -116,24 +135,42 @@ class PlaceHolderWindow(Gtk.Window):
         ctx.mask(mask)
 
     ############################################################################
-    # GtkWidget
+    # Gtk.Widget
     ############################################################################
     def do_realize(self):
+        """Creates the Gdk window resources for the PlaceHolderWindow.
+
+        """
         Gtk.Window.do_realize(self)
 
     def do_unrealize(self):
+        """Clears the Gdk window resources for the PlaceHolderWindow.
+
+        """
         Gtk.Window.do_unrealize(self)
 
     def do_size_allocate(self, allocation):
+        """Assigns a size and position to the PlaceHolderWindow.
+
+        Args:
+            allocation (Gdk.Rectangle): Position and size allocated.
+
+        """
         self.log.debug('%s' % allocation)
         Gtk.Window.do_size_allocate(self, allocation)
         drawingarea = Gtk.DrawingArea
         drawingarea.connect("draw", self._create_shape)
 
     ############################################################################
-    # GtkContainer
+    # Gtk.Container
     ############################################################################
     def do_add(self, widget):
+        """Called when the given widget is added to the PlaceHolderWindow.
+
+        Args:
+            widget (Gtk.Window): The widget to add.
+
+        """
         self.set_decorated(True)
         self.reset_shapes()
         Gtk.Window.add(self, widget)
@@ -142,6 +179,15 @@ class PlaceHolderWindow(Gtk.Window):
     # EtkPlaceHolderWindow
     ############################################################################
     def move_resize(self, x, y, width, height):
+        """Move and resize the PlaceHolderWindow.
+
+        Args:
+            x (int): x position to move the window to.
+            y (int): y position to move the window to.
+            width (int): Width to make the window.
+            height (int): Height to make the window.
+
+        """
         self.log.debug('%s, %s, %s, %s' % (x, y, width, height))
 
         self.move(x, y)

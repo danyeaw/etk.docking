@@ -34,16 +34,16 @@ from gi.repository import Gtk
 
 
 class DockSettings(object):
-    '''
-    Container for group specific settings.
-    The following settings can be set:
+    """Container for group specific settings.
 
+    The following settings can be set:
     * auto_remove: group is removed if if empty.
     * can_float: Group can be a floating group.
     * expand: A group can expand/shrink on resize.
-    * inherit_settings: new groups constructed from items dragged from a group should
-    get the same group name.
-    '''
+    * inherit_settings: new groups constructed from items dragged from a group
+        should get the same group name.
+
+    """
     __slots__ = ['auto_remove',
                  'can_float',
                  'float_retain_size',
@@ -60,14 +60,14 @@ class DockSettings(object):
 
 
 class DockSettingsDict(object):
-    '''
-    Settings container. Adheres partly to the dict protocol, only get() and setitem are
-    supported.
+    """Settings container.
 
-    Settings can deal with widget names as well as widgets itself (in which case the
-    name is requested). By overriding ``widget_name()`` it is possible to customize
-    the behaviour for settings.
-    '''
+    Adheres partly to the dict protocol, only get() and setitem are supported.
+    Settings can deal with widget names as well as widgets itself (in which
+    case the name is requested). By overriding ``widget_name()`` it is possible
+    to customize the behaviour for settings.
+
+    """
 
     def __init__(self):
         self._settings = {}  # Map group-id -> layout settings

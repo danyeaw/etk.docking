@@ -47,9 +47,9 @@ from .util import rect_contains
 
 
 class _DockGroupTab(object):
-    '''
-    Convenience class storing information about a tab.
-    '''
+    """ Convenience class storing information about a tab.
+
+    """
     __slots__ = ['item',  # DockItem associated with this tab
                  'item_title_handler',  # item title property notification signal handler id
                  'item_title_tooltip_text_handler',
@@ -72,25 +72,26 @@ class _DockGroupTab(object):
 
 
 class DockGroup(Gtk.Container):
-    '''
-    The etk.DockGroup widget is a Gtk.Container that groups its children in a
+    """
+    The DockGroup widget is a Gtk.Container that groups its children in a
     tabbed interface.
 
     Tabs can be reorder by dragging them to the desired location within the
     same or another etk.DockGroup having the same group-id. You can also drag
     a complete etk.DockGroup onto another etk.DockGroup having the same group-id
     to merge all etk.DockItems from the source into the destination
-    etk.DockGroup.
-    '''
+    DockGroup.
+
+    """
     __gtype_name__ = 'EtkDockGroup'
     __gproperties__ = {'weight':
-                        (GObject.TYPE_FLOAT,
-                         'item weight',
-                         'item weight',
-                         0,  # min
-                         1,  # max
-                         .2,  # default
-                         GObject.ParamFlags.READWRITE)}
+                           (GObject.TYPE_FLOAT,
+                            'item weight',
+                            'item weight',
+                            0,  # min
+                            1,  # max
+                            .2,  # default
+                            GObject.ParamFlags.READWRITE)}
     __gsignals__ = {'item-added':
                         (GObject.SignalFlags.RUN_LAST,
                          None,
@@ -110,7 +111,7 @@ class DockGroup(Gtk.Container):
         # Initialize logging
         self.log = getLogger('%s.%s' % (self.__gtype_name__, hex(id(self))))
 
-        # Internal housekeeping
+        self.weight = None
         self.set_border_width(2)
         self._frame_width = 1
         self._spacing = 3
@@ -150,18 +151,36 @@ class DockGroup(Gtk.Container):
     # GObject
     ############################################################################
     def do_get_property(self, pspec):
+        """Gets the property value.
+
+        Args:
+            pspec (GObject.ParamSpec): A property of the CompactButton.
+
+        Returns:
+            The parameter value.
+
+        """
         if pspec.name == 'weight':
             return self.get_weight()
 
     def do_set_property(self, pspec, value):
+        """Sets the property value.
+
+        Args:
+            pspec (GObject.ParamSpec): The property of the CompactButton to set.
+            value: the value to set.
+
+        """
         if pspec.name == 'weight':
             self.set_weight(value)
 
     ############################################################################
-    # GtkWidget
+    # Gtk.Widget
     ############################################################################
     def do_realize(self):
-        self.set_realized(True)
+        """Creates the Gdk window resources for the DockGroup.
+
+        """
         allocation = self.get_allocation()
         attr = Gdk.WindowAttr()
         attr.x = allocation.x
@@ -171,15 +190,15 @@ class DockGroup(Gtk.Container):
         attr.window_type = Gdk.WindowType.CHILD
         attr.wclass = Gdk.WindowWindowClass.INPUT_OUTPUT
         attr.event_mask = (
-            Gdk.EventMask.EXPOSURE_MASK
-            | Gdk.EventMask.POINTER_MOTION_MASK
-            | Gdk.EventMask.BUTTON_PRESS_MASK
-            | Gdk.EventMask.BUTTON_RELEASE_MASK
+                Gdk.EventMask.EXPOSURE_MASK
+                | Gdk.EventMask.POINTER_MOTION_MASK
+                | Gdk.EventMask.BUTTON_PRESS_MASK
+                | Gdk.EventMask.BUTTON_RELEASE_MASK
         )
         attr_mask = (
-            Gdk.WindowAttributesType.X
-            | Gdk.WindowAttributesType.Y
-            | Gdk.WindowAttributesType.WMCLASS
+                Gdk.WindowAttributesType.X
+                | Gdk.WindowAttributesType.Y
+                | Gdk.WindowAttributesType.WMCLASS
         )
         self.window = Gdk.Window(self.get_parent_window(), attr, attr_mask)
         self.window.set_user_data(self)
@@ -197,38 +216,62 @@ class DockGroup(Gtk.Container):
         self._min_button.set_parent_window(self.window)
         self._max_button.set_parent_window(self.window)
 
+        self.set_realized(True)
+
     def do_unrealize(self):
+        """Clears the Gdk window resources for the DockGroup.
+
+        """
+        self.set_realized(False)
         self.window.set_user_data(None)
         self.window.destroy()
-        Gtk.Container.do_unrealize(self)
 
     def do_map(self):
-        Gtk.Container.do_map(self)
+        """Causes the DockGroup to be mapped if it isn’t already.
+
+        """
+        # Gtk.Widget.do_map(self)
+        self.show_all()
         self._list_button.show()
         self._min_button.show()
         self._max_button.show()
         self.window.show()
+        self.set_mapped(True)
 
     def do_unmap(self):
+        """Causes the DockGroup to be unmapped if it is mapped.
+
+        """
+        self.set_mapped(False)
         self._list_button.hide()
         self._min_button.hide()
         self._max_button.hide()
         self.window.hide()
-        Gtk.Container.do_unmap(self)
 
     def do_get_request_mode(self):
-        """Returns whether the container prefers a height-for-width or a
+        """Returns the preferred container layout.
+
+        Returns whether the container prefers a height-for-width or a
         width-for-height layout. DockGroup doesn't trade width for height or
         height for width so we return CONSTANT_SIZE.
+
+        Returns:
+            Gtk.SizeRequestMode: the constant size request mode.
+
         """
         return Gtk.SizeRequestMode.CONSTANT_SIZE
 
     def do_get_preferred_height(self):
-        """Calculates the container's initial minimum and natural height. While
-        this call is specific to width-for-height requests (that we requested
+        """Calculates the container's initial minimum and natural height.
+
+        While this call is specific to width-for-height requests (that we requested
         not to get) we cannot be certain that our wishes are granted, so
         we must implement this method as well. Returns the the decoration area
         height.
+
+        Returns:
+             int: minimum height, natural height.
+
         """
         # Start with a zero sized decoration area height
         dh_min = dh_nat = 0
@@ -262,9 +305,9 @@ class DockGroup(Gtk.Container):
         max_button_min, max_button_nat = self._max_button.get_preferred_height()
 
         dh_min = max(dh_min,
-                 (self._spacing + list_button_min + self._spacing),
-                 (self._spacing + min_button_min + self._spacing),
-                 (self._spacing + max_button_min + self._spacing))
+                     (self._spacing + list_button_min + self._spacing),
+                     (self._spacing + min_button_min + self._spacing),
+                     (self._spacing + max_button_min + self._spacing))
 
         dh_nat = max(dh_nat,
                      (self._spacing + list_button_nat + self._spacing),
@@ -289,11 +332,16 @@ class DockGroup(Gtk.Container):
         return minimum_height, natural_height
 
     def do_get_preferred_width(self):
-        """Calculates the container's initial minimum and natural width. While
-        this call is specific to width-for-height requests (that we requested
-        not to get) we cannot be certain that our wishes are granted, so
-        we must implement this method as well. Returns the the decoration area
+        """Calculates the container's initial minimum and natural width.
+
+        While this call is specific to width-for-height requests (that we
+        requested not to get) we cannot be certain that our wishes are granted,
+        so we must implement this method as well. Returns the decoration area
         width.
+
+        Returns:
+            int: minimum width, natural width
+
         """
         # Start with a zero sized decoration width
         dw_min = dw_nat = 0
@@ -346,35 +394,52 @@ class DockGroup(Gtk.Container):
         return minimum_width, natural_width
 
     def do_get_preferred_height_for_width(self, width):
-        """Returns this container's minimum and natural height if it would be
-        given the specified width. While this call is specific to
-        height-for-width requests (that we requested not to get) we cannot be
-        certain that our wishes are granted, so we must implement this method
-        as well. Since we really want to be the same size always, we simply
-        return do_get_preferred_height.
+        """If given width, returns the minimum and natural height.
 
-        @param width The given width, as int. Ignored.
+        Returns the container's minimum and natural height if given the
+        specified width. While this call is specific to height-for-width
+        requests (that we requested not to get) we cannot be certain that our
+        wishes are granted, so we must implement this method as well. Since we
+        really want to be the same size always, we simply return
+        do_get_preferred_height.
+
+        Args:
+            width (int): The given width. Ignored.
+
+        Returns:
+            int: minimum height, natural height
+
         """
         return self.do_get_preferred_height()
 
     def do_get_preferred_width_for_height(self, height):
-        """Returns this container's minimum and natural width if it would be
-        given the specified height. While this call is specific to
-        width-for-height requests (that we requested not to get) we cannot be
-        certain that our wishes are granted, so we must implement this method
-        as well. Since we really want to be the same size always, we simply
-        return do_get_preferred_width.
+        """If given height, returns the minimum and natural width.
 
-        @param height The given height, as int. Ignored.
+        Returns the container's minimum and natural width if given the
+        specified height. While this call is specific to width-for-height
+        requests (that we requested not to get) we cannot be certain that our
+        wishes are granted, so we must implement this method as well. Since we
+        really want to be the same size always, we simply return
+        do_get_preferred_width.
+
+        Args:
+            height (int): The given height. Ignored.
+
+        Returns:
+            int: minimum width, natural width.
+
         """
         return self.do_get_preferred_width()
 
     def do_size_allocate(self, allocation):
-        """Assigns a size and position to the child widgets. Children may adjust
-        the given allocation in the adjust_size_allocation virtual method.
+        """Assigns a size and position to the child widgets.
 
-        @param allocation The position and size allocated to this container, as
-        Gdk.Rectangle
+        Children may adjust the given allocation in the adjust_size_allocation
+        virtual method.
+
+        Args:
+            allocation (Gdk.Rectangle): Position and size allocated.
+
         """
         self.allocation = allocation
 
@@ -401,7 +466,7 @@ class DockGroup(Gtk.Container):
 
         minb_rect = Gdk.Rectangle()
         minb_rect.height = (
-            allocation.width - self._frame_width - self._spacing - max_w - min_w
+                allocation.width - self._frame_width - self._spacing - max_w - min_w
         )
         minb_rect.width = by
         minb_rect.x = min_w
@@ -410,12 +475,12 @@ class DockGroup(Gtk.Container):
 
         listb_rect = Gdk.Rectangle()
         listb_rect.x = (
-            allocation.width
-            - self._frame_width
-            - self._spacing
-            - max_w
-            - min_w
-            - list_w
+                allocation.width
+                - self._frame_width
+                - self._spacing
+                - max_w
+                - min_w
+                - list_w
         )
         listb_rect.y = by
         listb_rect.width = list_w
@@ -424,7 +489,7 @@ class DockGroup(Gtk.Container):
 
         # Compute available tab area width
         self._available_width = (
-                    allocation.width - self._frame_width - self._spacing - max_w - min_w - list_w - self._spacing)
+                allocation.width - self._frame_width - self._spacing - max_w - min_w - list_w - self._spacing)
 
         # Update visible tabs
         self._update_visible_tabs()
@@ -511,6 +576,16 @@ class DockGroup(Gtk.Container):
         self.queue_draw_area(0, 0, self.allocation.width, self.allocation.height)
 
     def do_draw(self, cr):
+        """Draws the container to the given Cairo context.
+
+        The top left corner of the widget will be drawn to the currently set
+        origin point of the context. The container needs to propagate the draw
+        signal to its children.
+
+        Args:
+            cr (cairo.Context): The Cairo context to draw into
+
+        """
         style_provider = Gtk.CssProvider()
         style_context = self.get_style_context()
         style_context.add_provider(style_provider, Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
@@ -619,19 +694,21 @@ class DockGroup(Gtk.Container):
         self.propagate_draw(self._max_button, cr)
 
     def do_button_press_event(self, event):
-        '''
-        :param event: the event that triggered the signal
-        :returns: True to stop other handlers from being invoked for the event.
-                  False to propagate the event further.
+        """Called when a pointer button is pressed.
 
-        The do_button_press_event() signal handler is executed when a mouse
-        button is pressed.
-        '''
+        Sets the drag context source position and button equal to event if the
+        event window is the DockGroup window and the button. We might start a
+        DnD operation, or we could simply be starting a click on a tab. Store
+        information from this event in self.dragcontext and decide in
+        do_motion_notify_event if we're actually starting a DnD operation.
 
-        # We might start a DnD operation, or we could simply be starting
-        # a click on a tab. Store information from this event in self.dragcontext
-        # and decide in do_motion_notify_event if we're actually starting a
-        # dnd operation.
+        Args:
+            event (Gdk.EventButton): The event that triggered the signal
+
+        Returns:
+            bool: True to stop other handlers from being invoked for the event
+
+        """
         if event.window is self.window and event.button == 1:
             self.dragcontext.source_x = event.x
             self.dragcontext.source_y = event.y
@@ -640,15 +717,20 @@ class DockGroup(Gtk.Container):
         return True
 
     def do_button_release_event(self, event):
-        '''
-        :param event: the event that triggered the signal
-        :returns: True to stop other handlers from being invoked for the event.
-                  False to propagate the event further.
+        """Called when a pointer button is released.
 
-        The do_button_release_event() signal handler is executed when a mouse
-        button is released.
-        '''
+        On pointer button release, check if the user clicked on a tab, or right
+        clicked to get a context menu. A special tab context menu is not
+        currently implemented for right clicks on a tab, but this could be a
+        potential enhancement in the future.
 
+        Args:
+            event (Gdk.EventButton): The event that triggered the signal
+
+        Returns:
+            bool: True to stop other handlers from being invoked for the event
+
+        """
         # Did we click a tab?
         clicked_tab = self.get_tab_at_pos(event.x, event.y)
 
@@ -675,15 +757,19 @@ class DockGroup(Gtk.Container):
         return True
 
     def do_motion_notify_event(self, event):
-        '''
-        :param event: the event that triggered the signal
-        :returns: True to stop other handlers from being invoked for the event.
-                  False to propagate the event further.
+        """Called when the pointer moves over the DockGroup.
 
-        The do_motion-notify-event() signal handler is executed when the mouse
-        pointer moves while over this widget.
-        '''
+        When the motion notify event happens over a DockGroup, check if a DnD
+        operation is in progress, and if so check if the user is dragging tabs
+        in the DockGroup.
 
+        Args:
+            event (Gdk.EventMotion): The event that triggered the signal
+
+        Returns:
+            bool: True to stop other handlers from being invoked for the event
+
+        """
         # Reset tooltip text
         self.set_tooltip_text(None)
 
@@ -691,7 +777,7 @@ class DockGroup(Gtk.Container):
         # current tab's child widget
         if event.window is self.window:
             # Check if we are actually starting a DnD operation
-            if event.get_state() & Gdk.ModifierType.BUTTON1_MASK and \
+            if event.state & Gdk.ModifierType.BUTTON1_MASK and \
                     self.dragcontext.source_button == 1 and \
                     self.drag_check_threshold(int(self.dragcontext.source_x),
                                               int(self.dragcontext.source_y),
@@ -725,18 +811,20 @@ class DockGroup(Gtk.Container):
         return True
 
     ############################################################################
-    # GtkWidget drag source
+    # Gtk.Widget Gdk.DragContext Operations
     ############################################################################
     def do_drag_begin(self, context):
-        '''
-        :param context: the Gdk.DragContext
+        """Called on the drag source when the user initiates a drag operation.
 
-        The do_drag_begin() signal handler is executed on the drag source when
-        the user initiates a drag operation. A typical reason to use this signal
-        handler is to set up a custom drag icon with the drag_source_set_icon()
-        method.
-        '''
-        # Free the item for transport.
+        A typical reason to use this signal handler is to set up a custom drag
+        icon with the drag_source_set_icon() method. We are currently using it
+        to remove dragged items from the DockGroup.
+
+        Args:
+            context (Gdk.DragContext): The drag context
+
+        """
+        # Free the item for transport
         for item in self.dragcontext.dragged_object:
             self._dragged_tab_index = [t.item for t in self._tabs].index(item)
             self.remove_item(self._dragged_tab_index)
@@ -759,27 +847,26 @@ class DockGroup(Gtk.Container):
         # context.set_icon_widget(dnd_window, -2, -2)
         # context.set_icon_pixmap(tab.image.get_pixmap(), -2, -2)
 
-    def do_drag_data_get(self, context, selection_data, info, timestamp):
-        '''
-        :param context: the Gdk.DragContext
-        :param selection_data: a Gtk.SelectionData object
-        :param info: an integer ID for the drag
-        :param timestamp: the time of the drag event
+    def do_drag_data_get(self, context, selection_data, info, time):
+        """Called when a drag operation completes with data.
 
-        The do_drag_data_get() signal handler is executed when a drag operation
-        completes that copies data or when a drag drop occurs using the
-        Gdk.DRAG_PROTO_ROOTWIN protocol. The drag source executes this
-        handler when the drag destination requests the data using the
-        drag_get_data() method. This handler needs to fill selection_data
-        with the data in the format specified by the target associated with
-        info.
+        Gets drag data from a drag operation that completes that copies data or
+        when a drag drop occurs using the Gdk.DRAG_PROTO_ROOTWIN protocol. The
+        drag source executes this handler when the drag destination requests
+        the data using the drag_get_data() method. This handler needs to fill
+        selection_data with the data in the format specified by the target
+        associated with info. For tab movement, here the tab is removed from
+        the group. If the drop fails, the tab is restored in do_drag_failed().
+        For group movement, no special action is taken. This method sets some
+        selection_data so that the drag operation continues.
 
-        For tab movement, here the tab is removed from the group. If the
-        drop fails, the tab is restored in do_drag_failed().
+        Args:
+            context (Gdk.DragContext): The drag context
+            selection_data (Gtk.SelectionData): The selection data for the drag
+            info (int): The ID for the drag
+            time (int): The timestamp of the drag event
 
-        For group movement, no special action is taken.
-        '''
-        # Set some data so the DnD process continues
+        """
         selection_data.set(
             Gdk.atom_intern(atom_name=DRAG_TARGET_ITEM_LIST.target, only_if_exists=False),
             8,
@@ -787,30 +874,34 @@ class DockGroup(Gtk.Container):
         )
 
     def do_drag_data_delete(self, context):
-        '''
-        :param context: the Gdk.DragContext
+        """Called when the drag completes and data needs to be deleted.
 
-        The do_drag_data_delete() signal handler is executed when the drag
-        completes a move operation and requires the source data to be deleted.
-        The handler is responsible for deleting the data that has been dropped.
+        This is executed when the drag completes a move operation and requires
+        the source data to be deleted. The handler is responsible for deleting
+        the data that has been dropped. For groups, the group is deleted, for
+        tabs the group is destroyed of there are no more tabs left (see
+        do_drag_data_get()). DockLayout handles this so this method just
+        executes a pass.
 
-        For groups, the group is deleted, for tabs the group is destroyed
-        of there are no more tabs left (see do_drag_data_get()).
-        '''
-        # Let this be handled by the DockLayout
+        Args:
+            context (Gdk.DragContext): The drag context
+
+        """
         pass
 
     def do_drag_end(self, context):
-        '''
-        :param context: the Gdk.DragContext
+        """Called when the drag operation is completed.
 
-        The do_drag_end() signal handler is executed when the drag operation is
-        completed. A typical reason to use this signal handler is to undo things
-        done in the do_drag_begin() handler.
+        This is executed when the drag operation is completed. A typical reason
+        to use this signal handler is to undo things done in the
+        do_drag_begin() handler. In this case, items detached on drag-begin are
+        connected to the group again, if not attached to some other widget
+        already.
 
-        In this case, items distached on drag-begin are connected to the group
-        again, if not attached to some other widget already.
-        '''
+        Args:
+            context (Gdk.DragContext): The drag context
+
+        """
         if self.dragcontext.dragging and self.dragcontext.dragged_object:
             for item in self.dragcontext.dragged_object:
                 if not item.get_parent():
@@ -820,17 +911,17 @@ class DockGroup(Gtk.Container):
         self.queue_resize()
 
     ############################################################################
-    # GtkContainer
+    # Gtk.Container
     ############################################################################
     def do_forall(self, include_internals, callback, *callback_data):
         """Invokes the given callback on each tab, with the given data.
 
-        @param include_internals Whether to run on internal children as well, as
-                                 boolean. Ignored, as there are no internal
-                                 children.
-        @param callback The callback to call on each child, as Gtk.Callback
-        @param callback_data The parameters to pass to the callback, as object
-                             or None
+        Args:
+            include_internals (bool): Run on internal children
+            callback (Gtk.Callback): The callback to call on each child
+            callback_data (object or None): The parameters to pass to the
+                callback
+
         """
         if include_internals:
             for tab in self._tabs:
@@ -844,16 +935,68 @@ class DockGroup(Gtk.Container):
 
         # Docked items
         for tab in self._tabs:
-            callback(tab.item)
+            callback(tab.item, *callback_data)
 
     def do_add(self, widget):
+        """Called when the given widget is added to the DockGroup.
+
+        Args:
+            widget (Gtk.Widget): The widget to add
+
+        """
         if widget not in (tab.item for tab in self._tabs):
             self._insert_item(widget)
 
     def do_remove(self, widget):
+        """Called when the given widget is removed from the DockGroup.
+
+        Args:
+            widget (Gtk.Widget): The widget to remove
+
+        """
         self._remove_item(widget)
 
+    def do_child_type(self):
+        """Indicates that this container accepts any Gtk.Widget.
+
+        """
+        return Gtk.Widget.get_type()
+
+    ############################################################################
+    # EtkDockGroup
+    ############################################################################
+    items = property(lambda s: [t.item for t in s._tabs])
+
+    visible_items = property(lambda s: [t.item for t in s._visible_tabs])
+
+    def __contains__(self, item):
+        return item in self.items
+
+    def get_weight(self):
+        """Get the weight of the DockPaned.
+
+        Returns:
+            float: The weight
+
+        """
+        return self.weight
+
+    def set_weight(self, weight):
+        """Set the weight of the DockPaned.
+
+        Args:
+            weight (float): The weight
+
+        """
+        self.weight = weight
+
     def _remove_item(self, child):
+        """Removes an item from the DockGroup.
+
+        Args:
+            child (Gtk.Widget): The child widget to remove from the DockGroup
+
+        """
         assert child in (tab.item for tab in self._tabs)
 
         item_num = self.item_num(child)
@@ -887,20 +1030,14 @@ class DockGroup(Gtk.Container):
         self.set_current_item(item_num)
         self.emit('item-removed', child)
 
-    ############################################################################
-    # EtkDockGroup
-    ############################################################################
-    items = property(lambda s: [t.item for t in s._tabs])
-
-    visible_items = property(lambda s: [t.item for t in s._visible_tabs])
-
-    def __contains__(self, item):
-        return item in self.items
-
     def _update_visible_tabs(self):
-        # Check what tabs we can show with the space we have been allocated.
-        # Tabs on the far right of the current item tab get hidden first,
-        # then tabs on the far left.
+        """Check what tabs we can show with the allocated space.
+
+        Not all tabs are visible if the space allocated is to small. Tabs on
+        the far right of the current item tab get hidden first, then tabs on
+        the far left.
+
+        """
         if not self._tabs:
             del self._visible_tabs[:]
         else:
@@ -914,7 +1051,7 @@ class DockGroup(Gtk.Container):
                     self._visible_tabs.remove(tab)
 
                 # TODO: There are other places where something like this happens,
-                #       notably do_motion_notify_event. Consider some cleanup...
+                # notably do_motion_notify_event. Consider some cleanup...
                 if tab is self._current_tab:
                     tab.button.show()
                 else:
@@ -964,10 +1101,15 @@ class DockGroup(Gtk.Container):
                     self._current_tab.area.width = normal
 
     def set_tab_state(self, tab_state):
-        '''
-        Define the tab state. Normally that will be ``Gtk.StateFlags.SELECTED``, but a
+        """Define the tab state.
+
+        The tab state will Normally that will be Gtk.StateFlags.SELECTED, but a
         different state can be set if required.
-        '''
+
+        Args:
+            tab_state (Gtk.StateFlags): The tab state
+
+        """
         self._tab_state = tab_state
 
         allocation = self.get_allocation()
@@ -977,21 +1119,29 @@ class DockGroup(Gtk.Container):
             )
 
     def get_tab_state(self):
-        '''
-        Current state for drawing tabs.
-        '''
+        """Get current state for drawing tabs.
+
+        Returns:
+            Gtk.StateFlags: The tab state
+
+        """
         return self._tab_state
 
     def get_tab_at_pos(self, x, y):
-        '''
-        :param x: the x coordinate of the position
-        :param y: the y coordinate of the position
-        :returns: the item tab at the position specified by x and y or None
+        """Get the _DockGroupTab at the position.
 
-        The get_tab_at_pos() method returns the _DockGroupTab whose area
-        contains the position specified by x and y or None if no _DockGroupTab
-        area contains position.
-        '''
+        Returns the _DockGroupTab whose area contains the position specified by
+        x and y or None if no _DockGroupTab area contains position.
+
+        Args:
+            x (int): The x coordinate of the position
+            y (int): The y coordinate of the position
+
+        Returns:
+            _DockGroupTab: The item tab at the position specified by x and y
+                           or None
+
+        """
         for tab in self._visible_tabs:
             if (x, y) in tab:
                 return tab
@@ -999,45 +1149,70 @@ class DockGroup(Gtk.Container):
             return None
 
     def append_item(self, item):
-        '''
-        :param item: a DockItem
-        :returns: the index number of the item tab in the DockGroup
+        """Appends a DockItem to the DockGroup.
 
-        The append_item() method appends a DockItem to the DockGroup using the
-        DockItem specified by item.
-        '''
+        Args:
+            item (DockItem): The item to append
+
+        Returns:
+            int: The index number of the item tab in the DockGroup
+
+        """
         return self.insert_item(item)
 
     def prepend_item(self, item):
-        '''
-        :param item: a DockItem
-        :returns: the index number of the item tab in the DockGroup
+        """Prepends a DockItem to the DockGroup.
 
-        The prepend_item() method prepends a DockItem to the DockGroup using the
-        DockItem specified by item.
-        '''
+        Args:
+            item (DockItem): The item to append
+
+        Returns:
+            int: The index number of the item tab in the DockGroup
+
+        """
         return self.insert_item(item, position=0)
 
     def insert_item(self, item, position=None, visible_position=None):
-        '''
-        :param item: a DockItem
-        :param position: the index (starting at 0) at which to insert the item,
-                         or None to append the item after all other item tabs.
-        :param visible_position: the index at which the newly inserted item should
-                         be displayed. This index is usually different from the
-                         position and is normally only used when dropping items on
-                         the group.
-        :returns: the index number of the item tab in the DockGroup
+        """Insert a DockItem into the DockGroup.
 
-        The insert_item() method inserts a DockItem into the DockGroup at the
-        location specified by position (0 is the first item). item is the
-        DockItem to insert. If position is None the item is appended to the
-        DockGroup.
-        '''
-        index = self._insert_item(item, position, visible_position)
-        return index
+        Inserts a DockItem into the DockGroup at the location specified by
+        position (0 is the first item). item is the DockItem to insert. If
+        position is None the item is appended to the DockGroup.
+
+        Args:
+            item (DockItem): The item to append
+            position (int): The index (0 start) at which to insert the item, or
+                None to append the item after all other item tabs.
+            visible_position (int): The index at which the newly inserted item
+                should be displayed. This index is usually different from the
+                position and is normally only used when dropping items on the
+                group.
+
+        Returns:
+            int: The index number of the item tab in the DockGroup.
+
+        """
+        return self._insert_item(item, position, visible_position)
 
     def _insert_item(self, item, position=None, visible_position=None):
+        """Insert a DockItem into the DockGroup (Private).
+
+        Inserts a DockItem into the DockGroup at the location specified by
+        position (0 is the first item). item is the DockItem to insert. If
+        position is None the item is appended to the DockGroup.
+
+        Args:
+            item (DockItem): The item to append
+            position (int); The index (0 start) at which to insert the item, or
+                None to append the item after all other item tabs. visible_position
+            (int): The index at which the newly inserted item should be
+                displayed. This index is usually different from the position and is
+                normally only used when dropping items on the group.
+
+        Returns:
+            int: The index number of the item tab in the DockGroup.
+
+        """
         assert isinstance(item, DockItem)
         assert self.item_num(item) is None
 
@@ -1093,13 +1268,15 @@ class DockGroup(Gtk.Container):
         return item_num
 
     def remove_item(self, item_num):
-        '''
-        :param item_num: the index of an item tab, starting from 0. If None,
-                         the last item will be removed.
+        """Removes the item at the location specified by item_num.
 
-        The remove_item() method removes the item at the location specified by
-        item_num. The value of item_num starts from 0.
-        '''
+        The value of item_num starts from 0.
+
+        Args:
+            item_num (int): The index of an item tab, starting from 0. If None,
+                the last item will be removed.
+
+        """
         if item_num is None:
             tab = self._tabs[-1]
         else:
@@ -1109,67 +1286,81 @@ class DockGroup(Gtk.Container):
         self._remove_item(item)
 
     def item_num(self, item):
-        '''
-        :param item: a DockItem
-        :returns: the index of the item tab specified by item, or None if item
-                  is not in the DockGroup
+        """Returns the index of the item tab which contains the DockItem.
 
-        The item_num() method returns the index of the item tab which contains
-        the DockItem specified by item or None if no item tab contains item.
-        '''
+        Returns None if no item tab contains the item.
+
+        Args:
+            item (DockItem): The item to append
+
+        Returns:
+            int: The index number of the item tab or None
+
+        """
         for tab in self._tabs:
             if tab.item is item:
                 return self._tabs.index(tab)
         return None
 
-    def get_n_items(self):
-        '''
-        :returns: the number of item tabs in the DockGroup.
+    def get_num_items(self):
+        """Gets the number of item tabs in the DockGroup.
 
-        The get_n_items() method returns the number of item tabs in the
-        DockGroup.
-        '''
+        Taking the len of self makes use of the __len__ special metod.
+
+        Returns:
+            int: The number of item tabs
+
+        """
         return len(self)
 
     def get_nth_item(self, item_num):
-        '''
-        :param item_num: the index of an item tab in the DockGroup.
-        :returns: a DockItem, or None if item_num is out of bounds.
+        """Gets the DockItem contained in the item tab.
 
-        The get_nth_item() method returns the DockItem contained in the item tab
-        with the index specified by item_num. If item_num is out of bounds for
-        the item range of the DockGroup this method returns None.
-        '''
+        Returns the DockItem contained in the item tab with the index specified
+        by item_num. If item_num is out of bounds for the item range of the
+        DockGroup this method returns None.
+
+        Args:
+            item_num (int): The index of an item tab in the DockGroup.
+
+        Returns:
+            DockItem: The item.
+
+        """
         if item_num >= 0 and item_num <= len(self._tabs) - 1:
             return self._tabs[item_num].item
         else:
             return None
 
     def get_current_item(self):
-        '''
-        :returns: the index (starting from 0) of the current item tab in the
-                  DockGroup. If the DockGroup has no item tabs, then None will
-                  be returned.
+        """Gets the current item tab.
 
-        The get_current_item() method returns the index of the current item tab
-        numbered from 0, or None if there are no item tabs.
-        '''
+        Returns the index (starting from 0) of the current item tab in the
+        DockGroup. If the DockGroup has no item tabs, then None will be
+        returned.
+
+        Returns:
+            int: The index of the current item tab.
+
+        """
         if self._current_tab:
             return self._tabs.index(self._current_tab)
         else:
             return None
 
     def set_current_item(self, item_num):
-        '''
-        :param item_num: the index of the item tab to switch to, starting from
-                         0. If negative, the first item tab will be used. If
-                         greater than the number of item tabs in the DockGroup,
-                         the last item tab will be used.
+        """Sets the current item.
 
-        Switches to the item number specified by item_num. If item_num is
-        negative the first item is selected. If greater than the number of
-        items in the DockGroup, the last item is selected.
-        '''
+        The index starts at 0. If item_num is negative the first item is
+        selected. If greater than the number of items in the DockGroup, the
+        last item is selected. If negative, the first item tab will be used. If
+        greater than the number of item tabs in the DockGroup, the last item
+        tab will be used.
+
+        Args:
+            item_num (int): The index of the item tab to switch to.
+
+        """
         # Store a reference to the old current tab
         if self._current_tab and self._current_tab in self._tabs:
             old_tab = self._current_tab
@@ -1203,36 +1394,44 @@ class DockGroup(Gtk.Container):
         self.queue_resize()
 
     def next_item(self):
-        '''
-        The next_item() method switches to the next item. Nothing happens if
-        the current item is the last item.
-        '''
+        """Switches to the next item.
+
+        Switches to the next item by adding one to the current item index. If
+        the current item is the last item, then the current item will stay set.
+
+        """
         ci = self.get_current_item()
 
         if not ci == len(self) - 1:
             self.set_current_item(ci + 1)
 
     def prev_item(self):
-        '''
-        The prev_item() method switches to the previous item. Nothing happens
-        if the current item is the first item.
-        '''
+        """Switches to the previous item.
+
+        Switches to the previous item by subtracting one from the current item
+        index. If the current item is the first item, then the current item
+        will stay set.
+
+        """
         ci = self.get_current_item()
 
         if not ci == 0:
             self.set_current_item(ci - 1)
 
     def reorder_item(self, item, position):
-        '''
-        :param item: the DockItem widget to move
-        :param position: the index of the item tab that item is to move to
+        """Reorders the DockGroup items.
 
-        The reorder_item() method reorders the DockGroup items so that item
-        appears in the location specified by position. If position is greater
-        than or equal to the number of children in the list, item will be moved
-        to the end of the list. If position is negative, item will be moved
-        to the beginning of the list.
-        '''
+        Reorders the DockGroup items so that item appears in the location
+        specified by position. If position is greater than or equal to the
+        number of children in the list, item will be moved to the end of the
+        list. If position is negative, item will be moved to the beginning of
+        the list.
+
+        Args:
+            item (DockItem): The DockItem widget to move.
+            position (int): The index of the item tab that item is to move to.
+
+        """
         assert self.item_num(item) is not None
 
         if position < 0:
@@ -1245,18 +1444,20 @@ class DockGroup(Gtk.Container):
         self._tabs.insert(position, tab)
 
     def get_weight(self):
-        """
-        :return: the weight of the DockGroup.
+        """Retrieves the weight of the DockGroup.
 
-        Retrieves the weight of the DockGroup.
+        Returns:
+            float: The weight of the DockGroup.
+
         """
         return self.weight
 
     def set_weight(self, weight):
-        """
-        :param weight: the DockGroup's new orientation.
+        """Sets the weight of the DockGroup.
 
-        Sets the weight of the DockGroup.
+        Args:
+            weight (float): the DockGroup's new weight.
+
         """
         self.weight = weight
 
@@ -1264,6 +1465,12 @@ class DockGroup(Gtk.Container):
     # Property notification signal handlers
     ############################################################################
     def _item_title_changed(self, tab):
+        """Update the tab label after the title has changed.
+
+        Args:
+            tab (_DockGroupTab): The tab for the item.
+
+        """
         tab.label.set_text(tab.item.get_title())
         self.queue_resize()
 
@@ -1275,23 +1482,50 @@ class DockGroup(Gtk.Container):
             tab.menu_item.get_child().set_markup(tab.item.get_title())
 
     def _on_item_title_changed(self, item, pspec, tab):
+        """Call the method to update the tab on the item title changing.
+
+        Args:
+            item (DockItem): The item whose title changed
+            pspec (GObect.ParamSpec): The object structure to specify parameters
+            tab (_DockGroupTab): The tab of the item
+
+        """
         self._item_title_changed(tab)
 
     def _on_item_title_tooltip_text_changed(self, tab):
+        """Called when an item tooltip text updates.
+
+        Args:
+            tab (_DockGroupTab): The tab for the item.
+
+        """
         tab.menu_item.set_tooltip_text(tab.item.get_title_tooltip_text())
 
     ############################################################################
     # Decoration area signal handlers
     ############################################################################
     def _on_tab_button_clicked(self, button, item):
+        """Callback of the clicked signal of an item for the close button.
+
+        Args:
+            button (Gtk.Button): The clicked button
+            item (DockItem): The item to close
+
+        """
         item.close()
 
     def _on_list_button_clicked(self, button):
+        """Callback of the clicked signal when the tab list button is clicked.
+
+        Args:
+            button (Gtk.Button): The button clicked.
+
+        """
         def _menu_position(menu):
             wx, wy = self.window.get_origin()
             x = wx + button.allocation.x
             y = wy + button.allocation.y + button.allocation.height
-            return (x, y, True)
+            return x, y, True
 
         self._list_menu.show_all()
         self._list_menu.popup(parent_menu_shell=None, parent_menu_item=None,
@@ -1299,16 +1533,35 @@ class DockGroup(Gtk.Container):
                               activate_time=0)
 
     def _on_list_menu_item_activated(self, menuitem, tab):
+        """Callback of the clicked signal when the tab menu item is clicked.
+
+        Args:
+            menuitem: The menu item.
+            tab (_DockGroupTab): The tab of the menu item.
+
+        """
         self.set_current_item(self._tabs.index(tab))
 
     def _on_min_button_clicked(self, button):
+        """Callback of the clicked signal for the minimize button.
+
+        Args:
+            button (Gtk.Button): The button clicked.
+
+        """
         # TODO: Hiding the dockgroup is not a good idea, as it will be 'minimized'
-        # into a toolbar, managed by DockLayout. We'll probably want to emit
-        # a signal instead...
-        # self.hide()
+        #   into a toolbar, managed by DockLayout. We'll probably want to emit
+        #   a signal instead...
+        #   self.hide()
         pass
 
     def _on_max_button_clicked(self, button):
+        """Callback of the clicked signal for the maximize button.
+
+        Args:
+            button (Gtk.Button): The button clicked.
+
+        """
         if button.get_icon_name_normal() == 'compact-maximize':
             button.set_icon_name_normal('compact-restore')
             button.set_tooltip_text(_('Restore'))

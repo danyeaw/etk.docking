@@ -27,6 +27,7 @@ from collections import namedtuple
 from logging import getLogger
 
 import gi
+
 from simplegeneric import generic
 
 gi.require_version("Gtk", "3.0")
@@ -89,41 +90,66 @@ class DockLayout(GObject.GObject):
         self._drag_data = None
 
     def add(self, frame):
+        """Adds a DockFrame to the DockLayout.
+
+        Args:
+            frame (DockFrame): The DockFrame to add.
+        """
         assert isinstance(frame, DockFrame)
         self.frames.add(frame)
         self.add_signal_handlers(frame)
 
     def remove(self, frame):
+        """Removes a DockFrame from the DockLayout.
+
+        Args:
+            frame (DockFrame): The DockFrame to remove.
+
+        """
         self.remove_signal_handlers(frame)
         self.frames.remove(frame)
 
     def get_main_frames(self):
-        """
-        Get the frames that are non-floating (the main frames).
+        """Get the frames that are non-floating (the main frames).
+
+        Returns:
+            tuple: The frames that are non-floating.
+
         """
         return (f for f in self.frames \
                 if not (isinstance(f.get_parent(), Gtk.Window) \
                         and f.get_parent().get_transient_for()))
 
     def get_floating_frames(self):
-        """
-        Get the floating frames. Floating frames have a Gtk.Window as parent that is
-        transient for some other window.
+        """Get the floating frames.
+
+        Floating frames have a Gtk.Window as parent that is transient for some
+        other window.
+
+        Returns:
+            tuple: The frames that are floating.
+
         """
         return (f for f in self.frames \
                 if isinstance(f.get_parent(), Gtk.Window) \
                 and f.get_parent().get_transient_for())
 
     def get_widgets(self, name):
-        """
-        Get a set of widgets based on their name.
+        """Get a set of widgets based on their name.
+
+        Args:
+            name:
+
         """
         return [w for w in itertools.chain.from_iterable(flatten(frame) for frame in self.frames) if
                 w.get_name() == name]
 
     def _get_signals(self, widget):
-        """
-        Get a list of signals to be registered for a specific widget.
+        """Get a list of signals to be registered for a specific widget.
+
+        Args:
+            widget:
+
         """
         if isinstance(widget, DockPaned):
             signals = (('item-added', self.on_widget_add),
@@ -149,9 +175,14 @@ class DockLayout(GObject.GObject):
                           ('notify::is-focus', self.on_widget_is_focus))
 
     def add_signal_handlers(self, widget):
-        """
-        Set up signal handlers for layout and child widgets. Also group state is changed
-        from selected to prelight, in order to have one focused widget.
+        """Set up signal handlers for layout and child widgets.
+
+        Also group state is changed from selected to prelight, in order to have
+        one focused widget.
+
+        Args:
+            widget:
+
         """
         if self._signal_handlers.get(widget):
             return
@@ -186,8 +217,11 @@ class DockLayout(GObject.GObject):
             widget.set_tab_state(Gtk.StateType.PRELIGHT)
 
     def remove_signal_handlers(self, widget):
-        """
-        Remove signal handlers.
+        """Remove signal handlers.
+
+        Args:
+            widget:
+
         """
         try:
             signals = self._signal_handlers[widget]
@@ -205,6 +239,12 @@ class DockLayout(GObject.GObject):
                 widget.foreach(self.remove_signal_handlers)
 
     def update_floating_window_title(self, widget):
+        """Update the window title of the floating window.
+
+        Args:
+            widget: The widget which belongs to the floating window.
+
+        """
         frame = widget.get_ancestor(DockFrame)
 
         if frame in self.get_floating_frames():
@@ -213,13 +253,23 @@ class DockLayout(GObject.GObject):
                     [w.title for w in [w for w in flatten(frame) if isinstance(w, DockItem)]]))
 
     def do_item_closed(self, group, item):
-        """
-        If an item is closed, perform maintenance cleanup.
+        """If an item is closed, perform maintenance cleanup.
+
+        Args:
+            group:
+            item:
+
         """
         if settings[item].auto_remove:
             cleanup(group, self)
 
     def do_item_selected(self, group, item):
+        """
+
+        Args:
+            group:
+            item:
+        """
         # Use this callback to grey out the selection on all but the active selection?
         self._focused_item = item
 
@@ -231,8 +281,12 @@ class DockLayout(GObject.GObject):
             group.set_tab_state(Gtk.StateType.SELECTED)
 
     def on_widget_add(self, container, widget):
-        """
-        Deal with new elements being added to the layout or it's children.
+        """Deal with new elements being added to the layout or it's children.
+
+        Args:
+            container:
+            widget:
+
         """
         if isinstance(widget, Gtk.Container):
             self.add_signal_handlers(widget)
@@ -240,8 +294,12 @@ class DockLayout(GObject.GObject):
         self.update_floating_window_title(container)
 
     def on_widget_remove(self, container, widget):
-        """
-        Remove signals from containers and subcontainers.
+        """Remove signals from containers and subcontainers.
+
+        Args:
+            container:
+            widget:
+
         """
         if isinstance(widget, Gtk.Container):
             self.remove_signal_handlers(widget)
@@ -249,6 +307,15 @@ class DockLayout(GObject.GObject):
         self.update_floating_window_title(container)
 
     def on_widget_drag_motion(self, widget, context, x, y, timestamp):
+        """
+
+        Args:
+            widget:
+            context:
+            x:
+            y:
+            timestamp:
+        """
         if DRAG_TARGET_ITEM_LIST.target in context.targets:
             context.docklayout = self
             drag_data = drag_motion(widget, context, x, y, timestamp)
@@ -261,6 +328,13 @@ class DockLayout(GObject.GObject):
                 self._drag_data = drag_data
 
     def on_widget_drag_leave(self, widget, context, timestamp):
+        """
+
+        Args:
+            widget:
+            context:
+            timestamp:
+        """
         # Note: when dropping, drag-leave is invoked before drag-drop
         if DRAG_TARGET_ITEM_LIST.target in context.targets:
             drag_data = self._drag_data
@@ -270,6 +344,18 @@ class DockLayout(GObject.GObject):
                 drag_data.leave(drag_data.drop_widget)
 
     def on_widget_drag_drop(self, widget, context, x, y, timestamp):
+        """
+
+        Args:
+            widget:
+            context:
+            x:
+            y:
+            timestamp:
+
+        Returns:
+
+        """
         self.log.debug('drag_drop %s %s %s %s', context, x, y, timestamp)
 
         if DRAG_TARGET_ITEM_LIST.target in context.targets:
@@ -288,10 +374,18 @@ class DockLayout(GObject.GObject):
         return False
 
     def on_widget_drag_data_received(self, widget, context, x, y, selection_data, info, timestamp):
-        '''
-        Execute the received handler using the received handler retrieved in the
-        drag_drop event handler.
-        '''
+        """Execute the received handler from the drag_drop event handler.
+
+        Args:
+            widget:
+            context:
+            x:
+            y:
+            selection_data:
+            info:
+            timestamp:
+
+        """
         self.log.debug('drag_data_received %s, %s, %s, %s, %s, %s' % (context, x, y, selection_data, info, timestamp))
 
         if DRAG_TARGET_ITEM_LIST.target in context.targets:
@@ -304,18 +398,41 @@ class DockLayout(GObject.GObject):
                 self._drag_data = None
 
     def on_widget_drag_end(self, widget, context):
+        """
+
+        Args:
+            widget:
+            context:
+
+        Returns:
+
+        """
         if DRAG_TARGET_ITEM_LIST.target in context.targets:
             context.docklayout = self
             return drag_end(widget, context)
 
     def on_widget_drag_failed(self, widget, context, result):
+        """
+
+        Args:
+            widget:
+            context:
+            result:
+
+        Returns:
+
+        """
         if DRAG_TARGET_ITEM_LIST.target in context.targets:
             context.docklayout = self
             return drag_failed(widget, context, result)
 
     def on_widget_is_focus(self, widget, pspec):
-        """
-        The input focus moved to another widget.
+        """The input focus moved to another widget.
+
+        Args:
+            widget:
+            pspec:
+
         """
         if isinstance(widget, DockItem):
             item = widget
@@ -330,13 +447,23 @@ class DockLayout(GObject.GObject):
                 self.emit('item-selected', group, item)
 
     def on_dockitem_close(self, item):
+        """
+
+        Args:
+            item:
+
+        """
         group = item.get_parent()
         self.emit('item-closed', group, item)
         cleanup(group, self)
 
     def on_dockgroup_item_selected(self, group, item):
-        """
-        An item is selected by clicking on a tab.
+        """An item is selected by clicking on a tab.
+
+        Args:
+            group:
+            item:
+
         """
         focus_child = self._focus_data.get(item)
 
@@ -352,18 +479,46 @@ class DockLayout(GObject.GObject):
 ################################################################################
 
 def add_new_group_left(widget, new_group):
+    """
+
+    Args:
+        widget:
+        new_group:
+
+    """
     add_new_group_before(widget, new_group, Gtk.Orientation.HORIZONTAL)
 
 
 def add_new_group_right(widget, new_group):
+    """
+
+    Args:
+        widget:
+        new_group:
+
+    """
     add_new_group_after(widget, new_group, Gtk.Orientation.HORIZONTAL)
 
 
 def add_new_group_above(widget, new_group):
+    """
+
+    Args:
+        widget:
+        new_group:
+
+    """
     add_new_group_before(widget, new_group, Gtk.Orientation.VERTICAL)
 
 
 def add_new_group_below(widget, new_group):
+    """
+
+    Args:
+        widget:
+        new_group:
+        
+    """
     add_new_group_after(widget, new_group, Gtk.Orientation.VERTICAL)
 
 
@@ -371,6 +526,11 @@ def add_new_group_before(widget, new_group, orientation):
     """
     Create a new DockGroup and place it before `widget`. The DockPaned that will hold
     both groups will have the defined orientation.
+
+    Args:
+        widget:
+        new_group:
+        orientation:
     """
     position = widget.get_parent().get_children().index(widget)
     add_new_group(widget, new_group, orientation, position)
@@ -381,6 +541,11 @@ def add_new_group_after(widget, new_group, orientation):
     """
     Create a new DockGroup and place it after `widget`. The DockPaned that will hold
     both groups will have the defined orientation.
+
+    Args:
+        widget:
+        new_group:
+        orientation:
     """
     position = widget.get_parent().get_children().index(widget) + 1
     add_new_group(widget, new_group, orientation, position)
@@ -390,6 +555,12 @@ def add_new_group_after(widget, new_group, orientation):
 def add_new_group(widget, new_group, orientation, position):
     """
     Place a `new_group` next to `widget` in a
+
+    Args:
+        widget:
+        new_group:
+        orientation:
+        position:
     """
     # Parameters: orientation, position (left/top: None, right/bottom: 1),
     # current_child, (paned) current_position, (paned) weight
@@ -432,12 +603,32 @@ def add_new_group(widget, new_group, orientation, position):
 
 
 def _window_delete_handler(window, event):
+    """
+
+    Args:
+        window:
+        event:
+
+    Returns:
+
+    """
     list(map(lambda i: i.close(),
              [i for i in flatten(window) if isinstance(i, DockItem)]))
     return False
 
 
 def add_new_group_floating(new_group, layout, size=None, pos=None):
+    """
+
+    Args:
+        new_group:
+        layout:
+        size:
+        pos:
+
+    Returns:
+
+    """
     window = Gtk.Window.new(Gtk.WindowType.TOPLEVEL)
 
     if pos:
@@ -469,9 +660,17 @@ def add_new_group_floating(new_group, layout, size=None, pos=None):
 ################################################################################
 
 def _propagate_to_parent(func, widget, context, x, y, timestamp):
-    '''
+    """
     Common function to propagate calls to a parent widget.
-    '''
+
+    Args:
+        func:
+        widget:
+        context:
+        x:
+        y:
+        timestamp:
+    """
     parent = widget.get_parent()
 
     if parent:
@@ -483,10 +682,13 @@ def _propagate_to_parent(func, widget, context, x, y, timestamp):
 
 
 def with_magic_borders(func):
-    '''
+    """
     decorator for handlers that have sensitive borders, as items may be dropped
     on the parent item as well.
-    '''
+
+    Args:
+        func:
+    """
 
     def func_with_magic_borders(widget, context, x, y, timestamp):
         # Always ensure we check the parent class:
@@ -499,20 +701,27 @@ def with_magic_borders(func):
 
 @generic
 def magic_borders(widget, context, x, y, timestamp):
-    '''
+    """
     :returns: DragData if the parent widget handled the event
 
     This method is used to find out if (in case an item is dragged on the border of
     a widget, the parent is eager to take that event instead. This, for example,
     can be used to place items above or below each other in not-yet existing paned
     sections.
-    '''
+
+    Args:
+        widget:
+        context:
+        x:
+        y:
+        timestamp:
+    """
     pass
 
 
 @generic
 def drag_motion(widget, context, x, y, timestamp):
-    '''
+    """
     :param context: the Gdk.DragContext
     :param x: the X position of the drop
     :param y: the Y position of the drop
@@ -552,38 +761,53 @@ def drag_motion(widget, context, x, y, timestamp):
     the handler for this signal is expected to process the received data
     and then call the Gdk.DragContext.finish() method, setting the success
     parameter to True if the data was processed successfully.
-    '''
+
+    Args:
+        widget:
+        context:
+        x:
+        y:
+        timestamp:
+    """
     return _propagate_to_parent(drag_motion, widget, context, x, y, timestamp)
 
 
 @generic
 def cleanup(widget, layout):
-    '''
+    """
     :param widget: widget that may require cleanup.
 
     Perform cleanup action for a widget. For example after a drag-and-drop
     operation or when a dock-item is closed.
-    '''
+
+    Args:
+        widget:
+        layout:
+    """
     parent = widget.get_parent()
     return parent and cleanup(parent, layout)
 
 
 @generic
 def drag_end(widget, context):
-    '''
+    """
     :param context: the Gdk.DragContext
 
     The do_drag_end() signal handler is executed when the drag operation is
     completed. A typical reason to use this signal handler is to undo things
     done in the do_drag_begin() handler.
-    '''
+
+    Args:
+        widget:
+        context:
+    """
     parent = widget.get_parent()
     return parent and drag_end(parent, context)
 
 
 @generic
 def drag_failed(widget, context, result):
-    '''
+    """
     :param context: the Gdk.DragContext
     :param result: the result of the drag operation
     :returns: True if the failed drag operation has been already handled.
@@ -593,7 +817,12 @@ def drag_failed(widget, context, result):
     DND operation based on the type of error. It returns True if the
     failure has been already handled (not showing the default
     "drag operation failed" animation), otherwise it returns False.
-    '''
+
+    Args:
+        widget:
+        context:
+        result:
+    """
     parent = widget.get_parent()
     return parent and drag_failed(parent, context, result)
 
@@ -603,9 +832,14 @@ def drag_failed(widget, context, result):
 ################################################################################
 
 def new(class_, old=None, layout=None):
-    '''
+    """
     Create a new Widget. Set the group name if required.
-    '''
+
+    Args:
+        class_:
+        old:
+        layout:
+    """
     new = class_()
 
     if old and settings[old].inherit_settings:
@@ -614,6 +848,13 @@ def new(class_, old=None, layout=None):
 
 
 def dock_group_draw_highlight(self, da, ctx):
+    """
+
+    Args:
+        self:
+        da:
+        ctx:
+    """
     alloc = da.get_allocation()
     try:
         tab = self._visible_tabs[self._drop_tab_index]
@@ -633,6 +874,11 @@ def dock_group_draw_highlight(self, da, ctx):
 
 
 def dock_group_highlight(self):
+    """
+
+    Args:
+        self:
+    """
     if not hasattr(self, '_draw_event_id'):
         self.log.debug('attaching draw event')
         self._draw_event_id = self.connect_after('draw', dock_group_draw_highlight)
@@ -640,6 +886,11 @@ def dock_group_highlight(self):
 
 
 def dock_unhighlight(self):
+    """
+
+    Args:
+        self:
+    """
     self.queue_draw()
 
     try:
@@ -652,6 +903,18 @@ def dock_unhighlight(self):
 @drag_motion.when_type(DockGroup)
 @with_magic_borders
 def dock_group_drag_motion(self, context, x, y, timestamp):
+    """
+
+    Args:
+        self:
+        context:
+        x:
+        y:
+        timestamp:
+
+    Returns:
+
+    """
     self.log.debug('dock_group_drag_motion: %s, %s, %s, %s' % (context, x, y, timestamp))
 
     # Insert the dragged tab before the tab under (x, y)
@@ -668,6 +931,12 @@ def dock_group_drag_motion(self, context, x, y, timestamp):
     dock_group_highlight(self)
 
     def dock_group_drag_data_received(selection_data, info):
+        """
+
+        Args:
+            selection_data:
+            info:
+        """
         self.log.debug('%s, %s, %s, %s, %s, %s' % (context, x, y, selection_data, info, timestamp))
         source = context.get_source_widget()
         assert source
@@ -683,6 +952,15 @@ def dock_group_drag_motion(self, context, x, y, timestamp):
 
 @cleanup.when_type(DockGroup)
 def dock_group_cleanup(self, layout):
+    """
+
+    Args:
+        self:
+        layout:
+
+    Returns:
+
+    """
     if not self.items and settings[self].auto_remove:
         parent = self.get_parent()
         self.log.debug('removing empty group')
@@ -693,12 +971,28 @@ def dock_group_cleanup(self, layout):
 # Attached to drag *source*
 @drag_end.when_type(DockGroup)
 def dock_group_drag_end(self, context):
+    """
+
+    Args:
+        self:
+        context:
+    """
     cleanup(self, context.docklayout)
 
 
 # Attached to drag *source*
 @drag_failed.when_type(DockGroup)
 def dock_group_drag_failed(self, context, result):
+    """
+
+    Args:
+        self:
+        context:
+        result:
+
+    Returns:
+
+    """
     global settings
     self.log.debug('%s, %s' % (context, result))
     if result == 1 and settings[self].can_float:  # Gtk.DRAG_RESULT_NO_TARGET
@@ -725,6 +1019,16 @@ def dock_group_drag_failed(self, context, result):
 # DockPaned
 ################################################################################
 def dock_paned_draw_highlight(self, da, ctx):
+    """
+
+    Args:
+        self:
+        da:
+        ctx:
+
+    Returns:
+
+    """
     try:
         handle = self._handles[self._drop_handle_index]
     except (AttributeError, IndexError, TypeError) as e:
@@ -740,6 +1044,11 @@ def dock_paned_draw_highlight(self, da, ctx):
 
 
 def dock_paned_highlight(self):
+    """
+
+    Args:
+        self:
+    """
     if not hasattr(self, '_draw_event_id'):
         self.log.debug('attaching draw event')
         self._draw_event_id = self.connect_after('draw',
@@ -750,6 +1059,18 @@ def dock_paned_highlight(self):
 @drag_motion.when_type(DockPaned)
 @with_magic_borders
 def dock_paned_drag_motion(self, context, x, y, timestamp):
+    """
+
+    Args:
+        self:
+        context:
+        x:
+        y:
+        timestamp:
+
+    Returns:
+
+    """
     self.log.debug('dock_paned_drag_motion: %s, %s, %s, %s' % (context, x, y, timestamp))
 
     handle = self._get_handle_at_pos(x, y)
@@ -763,6 +1084,12 @@ def dock_paned_drag_motion(self, context, x, y, timestamp):
     dock_paned_highlight(self)
 
     def dock_paned_drag_data_received(selection_data, info):
+        """
+
+        Args:
+            selection_data:
+            info:
+        """
         self.log.debug('%s, %s, %s, %s, %s, %s' % (context, x, y, selection_data, info, timestamp))
 
         source = context.get_source_widget()
@@ -783,6 +1110,15 @@ def dock_paned_drag_motion(self, context, x, y, timestamp):
 
 @cleanup.when_type(DockPaned)
 def dock_paned_cleanup(self, layout):
+    """
+
+    Args:
+        self:
+        layout:
+
+    Returns:
+
+    """
     if not len(self):
         parent = self.get_parent()
         self.log.debug('removing empty paned')
@@ -813,10 +1149,21 @@ def dock_paned_cleanup(self, layout):
 # Attached to drag *source*
 @drag_end.when_type(DockPaned)
 def dock_paned_drag_end(self, context):
+    """
+
+    Args:
+        self:
+        context:
+    """
     cleanup(self, context.docklayout)
 
 
 def dock_paned_magic_borders_leave(self):
+    """
+
+    Args:
+        self:
+    """
     a = self.get_ancestor(DockFrame)
     if a:
         a.set_placeholder(None)
@@ -824,9 +1171,29 @@ def dock_paned_magic_borders_leave(self):
 
 @magic_borders.when_type(DockPaned)
 def dock_paned_magic_borders(self, context, x, y, timestamp):
+    """
+
+    Args:
+        self:
+        context:
+        x:
+        y:
+        timestamp:
+
+    Returns:
+
+    """
     a = self.allocation
 
     def create_received(create):
+        """
+
+        Args:
+            create:
+
+        Returns:
+
+        """
         current_group = self.get_item_at_pos(x, y)
         assert current_group
 
@@ -865,6 +1232,12 @@ def dock_paned_magic_borders(self, context, x, y, timestamp):
                 position = None
 
             def new_paned_and_group_receiver(selection_data, info):
+                """
+
+                Args:
+                    selection_data:
+                    info:
+                """
                 source = context.get_source_widget()
                 assert source
 
@@ -882,6 +1255,12 @@ def dock_paned_magic_borders(self, context, x, y, timestamp):
 
         else:
             def add_group_receiver(selection_data, info):
+                """
+
+                Args:
+                    selection_data:
+                    info:
+                """
                 source = context.get_source_widget()
                 assert source
                 new_group = new(DockGroup, source, context.docklayout)
@@ -913,6 +1292,12 @@ def dock_paned_magic_borders(self, context, x, y, timestamp):
 ################################################################################
 @cleanup.when_type(DockFrame)
 def dock_frame_cleanup(self, layout):
+    """
+
+    Args:
+        self:
+        layout:
+    """
     if not self.get_children():
         parent = self.get_parent()
         layout.remove(self)
@@ -926,23 +1311,41 @@ def dock_frame_cleanup(self, layout):
 
 @drag_end.when_type(DockFrame)
 def dock_frame_drag_end(self, context):
+    """
+
+    Args:
+        self:
+        context:
+    """
     cleanup(self, context.docklayout)
 
 
 def dock_frame_magic_borders_leave(self):
+    """
+
+    Args:
+        self:
+    """
     self.set_placeholder(None)
 
 
 @drag_motion.when_type(DockFrame)
 @magic_borders.when_type(DockFrame)
 def dock_frame_magic_borders(self, context, x, y, timestamp):
-    '''
+    """
     Deal with drop events that are not accepted by any Paned. Provided the
     outermost n pixels are not used by the item itself, but propagate the event
     to the parent widget. This means that sometimes the event ends up in the
     "catch-all", the DockFrame.  The Frame should make sure a new DockPaned is
     created with the proper orientation and whatever's needed.
-    '''
+
+    Args:
+        self:
+        context:
+        x:
+        y:
+        timestamp:
+    """
     a = self.get_allocation()
     border = self.border_width
 
@@ -978,6 +1381,12 @@ def dock_frame_magic_borders(self, context, x, y, timestamp):
         position = None
 
     def new_paned_and_group_receiver(selection_data, info):
+        """
+
+        Args:
+            selection_data:
+            info:
+        """
         source = context.get_source_widget()
         assert source
 

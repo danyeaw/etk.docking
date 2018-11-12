@@ -30,10 +30,10 @@ from gi.repository import Gtk, GObject, Gdk
 
 
 class DockFrame(Gtk.Bin):
-    '''
+    """
     The etk.DockFrame widget is a Gtk.Bin that acts as the toplevel widget
     for a dock layout hierarchy.
-    '''
+    """
     __gtype_name__ = 'EtkDockFrame'
 
     def __init__(self):
@@ -50,39 +50,52 @@ class DockFrame(Gtk.Bin):
     # GtkContainer
     ############################################################################
     def do_child_type(self):
-        """Indicates that this container accepts any GTK+ widget."""
+        """Indicates that this container accepts any GTK+ widget.
+
+        """
         return Gtk.Widget.get_type()
 
     def do_forall(self, include_internals, callback, *callback_data):
         """Invokes the given callback on the child widget, with the given data.
 
-        @param include_internals Whether to run on internal children as well, as
-                                 boolean. Ignored, as there are no internal
-                                 children.
-        @param callback The callback to call on the child, as Gtk.Callback
-        @param callback_data The parameters to pass to the callback, as object
-                             or None
+        Args:
+            include_internals (bool): Run on internal children
+            callback (Gtk.Callback): The callback to call on each child
+            callback_data (object or None): The parameters to pass to the
+                callback
+
         """
         child = self.get_child()
         if include_internals and child:
             callback(child, *callback_data)
 
     ############################################################################
-    # GtkWidget
+    # Gtk.Widget
     ############################################################################
     def do_get_request_mode(self):
-        """Returns whether the DockFrame prefers a height-for-width or a
+        """Returns the DockFrame's preferred layout for size determination.
+
+        Returns whether the DockFrame prefers a height-for-width or a
         width-for-height layout. DockFrame doesn't trade width for height or
         height for width so we return CONSTANT_SIZE.
+
+        Returns:
+            Gtk.SizeRequestMode: The constant size request mode.
+
         """
         return Gtk.SizeRequestMode.CONSTANT_SIZE
 
     def do_get_preferred_height(self):
-        """Calculates the DockFrame's initial minimum and natural height. While
-        this call is specific to width-for-height requests (that we requested
-        not to get) we cannot be certain that our wishes are granted, so we
-        must implement this method as well. Returns the preferred height of the
-        child widget with padding added for the border width.
+        """Calculates the DockFrame's initial minimum and natural height.
+
+        While this call is specific to width-for-height requests (that we
+        requested not to get) we cannot be certain that our wishes are granted,
+        so we must implement this method as well. Returns the preferred height
+        of the child widget with padding added for the border width.
+
+        Returns:
+            int: minimum height, natural height.
+
         """
         minimum_height = 0
         natural_height = 0
@@ -94,11 +107,16 @@ class DockFrame(Gtk.Bin):
         return minimum_height, natural_height
 
     def do_get_preferred_width(self):
-        """Calculates the DockFrame's initial minimum and natural width. While
-        this call is specific to width-for-height requests (that we requested
-        not to get) we cannot be certain that our wishes are granted, so
-        we must implement this method as well. Returns the preferred width of
-        the child widget with padding added for the border width.
+        """Calculates the DockFrame's initial minimum and natural width.
+
+        While this call is specific to width-for-height requests (that we
+        requested not to get) we cannot be certain that our wishes are granted,
+        so we must implement this method as well. Returns the preferred width
+        of the child widget with padding added for the border width.
+
+        Returns:
+            int: minimum width, natural width.
+
         """
         minimum_width = 0
         natural_width = 0
@@ -110,30 +128,47 @@ class DockFrame(Gtk.Bin):
         return minimum_width, natural_width
 
     def do_get_preferred_height_for_width(self, width):
-        """Returns this DockFrame's minimum and natural height if it would be
-        given the specified width. While this call is specific to
-        height-for-width requests (that we requested not to get) we cannot be
-        certain that our wishes are granted, so we must implement this method
-        as well. Since we really want to be the same size always, we simply
-        return do_get_preferred_height.
+        """Returns this DockFrame's minimum and natural height, given width.
 
-        @param width The given width, as int. Ignored.
+        If the DockFrame is given the specified width, calculate the minimum
+        and natural height. While this call is specific to height-for-width
+        requests (that we requested not to get) we cannot be certain that our
+        wishes are granted, so we must implement this method as well. Since we
+        really want to be the same size always, we simply return
+        do_get_preferred_height.
+
+        Args:
+            width (int): The given width, ignored.
+
         """
         return self.do_get_preferred_height()
 
     def do_get_preferred_width_for_height(self, height):
-        """Returns this DockFrame's minimum and natural width if it would be
-        given the specified height. While this call is specific to
-        width-for-height requests (that we requested not to get) we cannot be
-        certain that our wishes are granted, so we must implement this method
-        as well. Since we really want to be the same size always, we simply
-        return do_get_preferred_width.
+        """Returns this DockFrame's minimum and natural width, given height.
 
-        @param height The given height, as int. Ignored.
+        If the DockFrame is given the specified height, calculate the minimum
+        and natural width. While this call is specific to width-for-height
+        requests (that we requested not to get) we cannot be certain that our
+        wishes are granted, so we must implement this method as well. Since we
+        really want to be the same size always, we simply return
+        do_get_preferred_width.
+
+        Args:
+            height (int): The given height, ignored.
+
         """
         return self.do_get_preferred_width()
 
     def do_size_allocate(self, allocation):
+        """Assigns a size and position to the child widgets.
+
+        Children may adjust the given allocation in the adjust_size_allocation
+        virtual method.
+
+        Args:
+            allocation (Gdk.Rectangle): Position and size allocated.
+
+        """
         self.border_width = self.get_border_width()
         child = self.get_child()
 
@@ -149,11 +184,11 @@ class DockFrame(Gtk.Bin):
     # EtkDockFrame
     ############################################################################
     def set_placeholder(self, placeholder):
-        """
-        Set a new placeholder widget on the frame. The placeholder is drawn on top
-        of the dock items.
+        """Set a new placeholder widget on the frame.
 
-        If a new placeholder is set, an existing placeholder is destroyed.
+        The placeholder is drawn on top of the dock items. If a new placeholder
+        is set, an existing placeholder is destroyed.
+
         """
         if self._placeholder:
             self._placeholder.unparent()

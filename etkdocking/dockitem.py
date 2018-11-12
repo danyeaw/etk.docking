@@ -30,6 +30,13 @@ from gi.repository import Gtk, Gdk, GObject
 
 
 class DockItem(Gtk.Bin):
+    """DockItems are added as tabs to a DockGroup.
+
+    DockItems have an icon image, a title, tooltip, and use the CompactButtons
+    for user input for things like requesting that the tab is closed or
+    maximized. Each DockItem is a Gtk.Bin and can have a single child widget.
+
+    """
     __gtype_name__ = 'EtkDockItem'
     __gproperties__ = {'title':
                            (GObject.TYPE_STRING,
@@ -87,6 +94,15 @@ class DockItem(Gtk.Bin):
     # GObject
     ############################################################################
     def do_get_property(self, pspec):
+        """Gets the property value.
+
+        Args:
+            pspec (GObject.ParamSpec): A property of the CompactButton.
+
+        Returns:
+            The parameter value.
+
+        """
         if pspec.name == 'title':
             return self.get_title()
         elif pspec.name == 'title-tooltip-text':
@@ -99,6 +115,13 @@ class DockItem(Gtk.Bin):
             return self.get_image()
 
     def do_set_property(self, pspec, value):
+        """Sets the property value.
+
+        Args:
+            pspec (GObject.ParamSpec): The property of the CompactButton to set.
+            value: the value to set.
+
+        """
         if pspec.name == 'title':
             self.set_title(value)
         elif pspec.name == 'title-tooltip-text':
@@ -109,34 +132,91 @@ class DockItem(Gtk.Bin):
             self.set_stock(value)
 
     def get_title(self):
+        """Get title of DockItem.
+
+        Returns:
+            string: Title of DockItem.
+
+        """
         return self._title
 
     def set_title(self, text):
+        """Set title of DockItem.
+
+        Args:
+            text (string): Text to set title of DockItem to.
+
+        """
         self._title = text
         self.notify('title')
 
     def get_title_tooltip_text(self):
+        """Get tooltip text of DockItem title that is displayed on hover.
+
+        Returns:
+            string: Tooltip text of title.
+
+        """
         return self._title_tooltip_text
 
     def set_title_tooltip_text(self, text):
+        """Set tootip text of DockItem title that is displayed on hover.
+
+        Args:
+            text (string): Text to set tooltip to.
+
+        """
         self._title_tooltip_text = text
         self.notify('title-tooltip-text')
 
     def get_icon_name(self):
+        """Get icon name of DockItem.
+
+        Returns:
+            string: Icon name.
+
+        """
         return self._icon_name
 
     def set_icon_name(self, icon_name):
+        """Set icon name of DockItem.
+
+        Args:
+            icon_name (string): Icon name to set.
+
+        """
         self._icon_name = icon_name
         self.notify('icon-name')
 
     def get_stock(self):
+        """Gets the icon stock id.
+
+        TODO: stock has been deprecated in Gtk+
+
+        Returns:
+
+        """
         return self._stock_id
 
     def set_stock(self, stock_id):
+        """Sets the icon stock id.
+
+        TODO: stock has been deprecated in Gtk+
+
+        Args:
+            stock_id (string): A stock icon name.
+
+        """
         self._stock_id = stock_id
         self.notify('stock')
 
     def get_image(self):
+        """Gets the Gtk.Image for the DockItem.
+
+        Returns:
+            Gtk.Image: The image displayed in the DockItem tab.
+
+        """
         if self._icon_name:
             return Gtk.Image.new_from_icon_name(self._icon_name, Gtk.IconSize.MENU)
         elif self._stock_id:
@@ -150,42 +230,57 @@ class DockItem(Gtk.Bin):
     stock = property(get_stock, set_stock)
 
     ############################################################################
-    # GtkContainer
+    # Gtk.Container
     ############################################################################
     def do_child_type(self):
-        """Indicates that this container accepts any GTK+ widget."""
+        """Indicates that this container accepts any GTK+ widget.
+
+            Returns:
+                GObject.GType: The type of children supported by the Container.
+        """
         return Gtk.Widget.get_type()
 
     def do_forall(self, include_internals, callback, *callback_data):
-        """Invokes the given callback on the child widget, with the given data.
+        """Invokes the given callback on each tab, with the given data.
 
-        @param include_internals Whether to run on internal children as well, as
-                                 boolean. Ignored, as there are no internal
-                                 children.
-        @param callback The callback to call on the child, as Gtk.Callback
-        @param callback_data The parameters to pass to the callback, as object
-                             or None
+        Args:
+            include_internals (bool): Run on internal children
+            callback (Gtk.Callback): The callback to call on each child
+            callback_data (object or None): The parameters to pass to the
+                callback
+
         """
         child = self.get_child()
         if include_internals and child:
             callback(child, *callback_data)
 
     ############################################################################
-    # GtkWidget
+    # Gtk.Widget
     ############################################################################
     def do_get_request_mode(self):
-        """Returns whether the DockItem prefers a height-for-width or a
-        width-for-height layout. DockItem doesn't trade width for height or
+        """Returns the preferred container layout.
+
+        Returns whether the container prefers a height-for-width or a
+        width-for-height layout. DockGroup doesn't trade width for height or
         height for width so we return CONSTANT_SIZE.
+
+        Returns:
+            Gtk.SizeRequestMode: the constant size request mode.
+
         """
         return Gtk.SizeRequestMode.CONSTANT_SIZE
 
     def do_get_preferred_height(self):
-        """Calculates the DockItem's initial minimum and natural height. While
-        this call is specific to width-for-height requests (that we requested
-        not to get) we cannot be certain that our wishes are granted, so we
-        must implement this method as well. Returns the preferred height of the
-        child widget with padding added for the border width.
+        """Calculates the DockItem's initial minimum and natural height.
+
+        While this call is specific to width-for-height requests (that we requested
+        not to get) we cannot be certain that our wishes are granted, so
+        we must implement this method as well. Returns the the decoration area
+        height.
+
+        Returns:
+             int: minimum height, natural height.
+
         """
         minimum_height = 0
         natural_height = 0
@@ -197,11 +292,16 @@ class DockItem(Gtk.Bin):
         return minimum_height, natural_height
 
     def do_get_preferred_width(self):
-        """Calculates the DockItem's initial minimum and natural width. While
-        this call is specific to width-for-height requests (that we requested
-        not to get) we cannot be certain that our wishes are granted, so
-        we must implement this method as well. Returns the preferred width of
-        the child widget with padding added for the border width.
+        """Calculates the container's initial minimum and natural width.
+
+        While this call is specific to width-for-height requests (that we
+        requested not to get) we cannot be certain that our wishes are granted,
+        so we must implement this method as well. Returns the decoration area
+        width.
+
+        Returns:
+            int: minimum width, natural width
+
         """
         minimum_width = 0
         natural_width = 0
@@ -213,30 +313,53 @@ class DockItem(Gtk.Bin):
         return minimum_width, natural_width
 
     def do_get_preferred_height_for_width(self, width):
-        """Returns this DockItem's minimum and natural height if it would be
-        given the specified width. While this call is specific to
-        height-for-width requests (that we requested not to get) we cannot be
-        certain that our wishes are granted, so we must implement this method
-        as well. Since we really want to be the same size always, we simply
-        return do_get_preferred_height.
+        """If given width, returns the minimum and natural height.
 
-        @param width The given width, as int. Ignored.
+        Returns the DockItem's minimum and natural height if given the
+        specified width. While this call is specific to height-for-width
+        requests (that we requested not to get) we cannot be certain that our
+        wishes are granted, so we must implement this method as well. Since we
+        really want to be the same size always, we simply return
+        do_get_preferred_height.
+
+        Args:
+            width (int): The given width. Ignored.
+
+        Returns:
+            int: minimum height, natural height
+
         """
         return self.do_get_preferred_height()
 
     def do_get_preferred_width_for_height(self, height):
-        """Returns this DockItem's minimum and natural width if it would be
-        given the specified height. While this call is specific to
-        width-for-height requests (that we requested not to get) we cannot be
-        certain that our wishes are granted, so we must implement this method
-        as well. Since we really want to be the same size always, we simply
-        return do_get_preferred_width.
+        """If given height, returns the minimum and natural width.
 
-        @param height The given height, as int. Ignored.
+        Returns the DockItem's minimum and natural width if given the
+        specified height. While this call is specific to width-for-height
+        requests (that we requested not to get) we cannot be certain that our
+        wishes are granted, so we must implement this method as well. Since we
+        really want to be the same size always, we simply return
+        do_get_preferred_width.
+
+        Args:
+            height (int): The given height. Ignored.
+
+        Returns:
+            int: minimum width, natural width.
+
         """
         return self.do_get_preferred_width()
 
     def do_size_allocate(self, allocation):
+        """Assigns a size and position to DockItem's child widget.
+
+        The child may adjust the given allocation in the adjust_size_allocation
+        virtual method.
+
+        Args:
+            allocation (Gdk.Rectangle): Position and size allocated.
+
+        """
         self.border_width = self.get_border_width()
         child = self.get_child()
 
@@ -252,9 +375,15 @@ class DockItem(Gtk.Bin):
     # DockItem
     ############################################################################
     def do_close(self):
+        """Removes the DockItem from the parent DockGroup.
+
+        """
         group = self.get_parent()
         if group:
             group.remove(self)
 
     def close(self):
+        """Emits the close signal on the DockItem.
+
+        """
         self.emit('close')

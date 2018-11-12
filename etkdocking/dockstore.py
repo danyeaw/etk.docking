@@ -22,7 +22,7 @@
 from __future__ import absolute_import
 from __future__ import division
 # TODO make parsing XML backwards compatible
-# from builtins import str
+#   from builtins import str
 from builtins import map
 from past.utils import old_div
 import sys
@@ -44,6 +44,15 @@ SERIALIZABLE = (DockFrame, DockPaned, DockGroup, DockItem)
 
 
 def serialize(layout):
+    """Serialize the DockLayout for saving to disk.
+
+    Args:
+        layout (DockLayout): The layout to serialize
+
+    Returns:
+        string: The serialized DockLayout.
+
+    """
     def _ser(widget, element):
         if isinstance(widget, SERIALIZABLE):
             sub = SubElement(element, type(widget).__name__.lower(), attributes(widget))
@@ -61,11 +70,20 @@ widget_factory = {}
 
 
 def deserialize(layoutstr, itemfactory):
-    '''
-    Return a new layout with it's attached frames. Frames that should be floating
-    already have their Gtk.Window attached (check frame.get_parent()). Transient settings
-    and such should be done by the invoking application.
-    '''
+    """Deserialize the DockLayout for loading from disk.
+
+    Returns a new layout with it's attached frames. Frames that should be
+    floating already have their Gtk.Window attached (check frame.get_parent()).
+    Transient settings and such should be done by the invoking application.
+
+    Args:
+        layoutstr (string): The serialized DockLayout to deserialize.
+        itemfactory (ItemFactory): The item factory for creating the layout.
+
+    Returns:
+        DockLayout: The deserialized layout.
+
+    """
 
     def _des(element, parent_widget=None):
         if element.tag == 'widget':
@@ -89,15 +107,30 @@ def deserialize(layoutstr, itemfactory):
 
 
 def get_main_frames(layout):
+    """Get the frames that are non-floating (the main frames).
+
+    Args:
+        layout (DockLayout): The layout to get the main frames for.
+
+    Returns:
+        tuple: The frames that are non-floating.
+
+    """
     return (f for f in layout.frames \
             if not isinstance(f.get_parent(), Gtk.Window))
 
 
 def finish(layout, main_frame):
-    '''
-    Finish the loading process by setting all floating windows "transient_for" the main
-    window (which should be a ancestor of the main_frame).
-    '''
+    """Finish the loading process of the layout using the main frame.
+
+    Sets all floating windows "transient_for" the main window (which should be
+    a ancestor of the main_frame).
+
+    Args:
+        layout (DockLayout): The layout to finish the loading process of.
+        main_frame: The main frame to use.
+
+    """
     main_window = main_frame.get_toplevel()
 
     for frame in layout.frames:
@@ -112,8 +145,14 @@ def finish(layout, main_frame):
 
 
 def parent_attributes(widget):
-    """
-    Add properties defined in the parent widget specific for this instance (like weight).
+    """Add properties to the widget from the parent.
+
+    Properties are defined in the parent widget specific for this instance
+    (like weight).
+
+    Args:
+        widget (Gtk.Widget): The widget to add properties to.
+
     """
     container = widget.get_parent()
     d = {}
@@ -176,10 +215,12 @@ def dock_frame_attributes(widget):
 
 
 def factory(typename):
-    '''
-    Simple decorator for populating the widget_factory dictionary.
-    '''
+    """Simple decorator for populating the widget_factory dictionary.
 
+    Args:
+        typename: The item type.
+
+    """
     def _factory(func):
         widget_factory[typename] = func
         return func
@@ -190,6 +231,9 @@ def factory(typename):
 @factory('dockitem')
 def dock_item_factory(parent, title, tooltip, icon_name=None, stock_id=None, pos=None, vispos=None, current=None,
                       name=None):
+    """The factory for creating a DockItem.
+
+    """
     item = DockItem(title, tooltip, icon_name, stock_id)
     if name:
         item.set_name(name)
@@ -203,6 +247,9 @@ def dock_item_factory(parent, title, tooltip, icon_name=None, stock_id=None, pos
 
 @factory('dockgroup')
 def dock_group_factory(parent, weight=None, name=None):
+    """The factory for creating a DockGroup.
+
+    """
     group = DockGroup()
 
     if name:
@@ -218,6 +265,9 @@ def dock_group_factory(parent, weight=None, name=None):
 
 @factory('dockpaned')
 def dock_paned_factory(parent, orientation, weight=None, name=None):
+    """The factory for creating a DockPaned.
+
+    """
     paned = DockPaned()
 
     if name:
@@ -238,6 +288,9 @@ def dock_paned_factory(parent, orientation, weight=None, name=None):
 
 @factory('dockframe')
 def dock_frame_factory(parent, width, height, floating=None, x=None, y=None):
+    """The factory for creating a DockFrame.
+
+    """
     assert isinstance(parent, DockLayout), parent
 
     frame = DockFrame()

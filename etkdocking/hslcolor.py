@@ -29,6 +29,9 @@ from gi.repository import Gdk, GObject
 
 
 class HslColor(GObject.GObject):
+    """
+
+    """
     __gtype_name__ = 'EtkHslColor'
     __gproperties__ = {'h': (float, 'h', 'h', 0.0, 1.0, 0.0, GObject.ParamFlags.READWRITE),
                        's': (float, 's', 's', 0.0, 1.0, 0.0, GObject.ParamFlags.READWRITE),
@@ -54,6 +57,15 @@ class HslColor(GObject.GObject):
     # GObject
     ############################################################################
     def do_get_property(self, pspec):
+        """Gets the property value.
+
+        Args:
+            pspec (GObject.ParamSpec): A property of the CompactButton.
+
+        Returns:
+            The parameter value.
+
+        """
         if pspec.name == 'h':
             return self.get_h()
         elif pspec.name == 's':
@@ -68,6 +80,13 @@ class HslColor(GObject.GObject):
             return self.get_blue_float()
 
     def do_set_property(self, pspec, value):
+        """Sets the property value.
+
+        Args:
+            pspec (GObject.ParamSpec): The property of the CompactButton to set.
+            value: the value to set.
+
+        """
         if pspec.name == 'h':
             self.set_h(value)
         elif pspec.name == 's':
@@ -76,9 +95,21 @@ class HslColor(GObject.GObject):
             self.set_l(value)
 
     def get_h(self):
+        """Gets the color's hue.
+
+        Returns:
+            float: The hue, between 0 and 1.
+
+        """
         return self._h
 
     def set_h(self, value):
+        """Sets the color's hue.
+
+        Args:
+            value (float): The hue value to set, between 0 and 1.
+
+        """
         if value < 0:
             self._h = 0.0
         elif value > 1:
@@ -88,9 +119,21 @@ class HslColor(GObject.GObject):
             self._update_rgb()
 
     def get_s(self):
+        """Gets the color's saturation.
+
+        Returns:
+            float: The saturation, between 0 and 1.
+
+        """
         return self._s
 
     def set_s(self, value):
+        """Sets the color's saturation.
+
+        Args:
+            value (float): The saturation value to set, between 0 and 1.
+
+        """
         if value < 0:
             self._s = 0.0
         elif value > 1:
@@ -100,9 +143,21 @@ class HslColor(GObject.GObject):
             self._update_rgb()
 
     def get_l(self):
+        """Gets the color's lightness.
+
+        Returns:
+            float: The lightness, between 0 and 1.
+
+        """
         return self._l
 
     def set_l(self, value):
+        """Sets the color's lightness.
+
+        Args:
+            value (float): The lightness, between 0 and 1.
+
+        """
         if value < 0:
             self._l = 0.0
         elif value > 1:
@@ -112,27 +167,71 @@ class HslColor(GObject.GObject):
             self._update_rgb()
 
     def get_red_float(self):
+        """Gets the color's red component.
+
+        Returns:
+            float: The red value, between 0 and 1.
+
+        """
         return self._red_float
 
     def get_green_float(self):
+        """Gets the color's green component.
+
+        Returns:
+            float: The green value, between 0 and 1.
+
+        """
         return self._green_float
 
     def get_blue_float(self):
+        """Gets the color's blue component.
+
+        Returns:
+            float: The blue value, between 0 and 1.
+
+        """
         return self._blue_float
 
     def get_rgb_float(self):
+        """Gets the RGB color value as float.
+
+        Returns:
+            tuple of float: red, green, blue (between 0 and 1).
+
+        """
         return (self._red_float, self._green_float, self._blue_float)
 
     def get_rgb(self):
+        """Gets the RGB color value as 16-bit color (0 - 65535).
+
+        Returns:
+            tuple of int: red, green, blue.
+
+        """
         return (int(self._red_float * 65535), int(self._green_float * 65535), int(self._blue_float * 65535))
 
     ############################################################################
     # HslColor
     ############################################################################
     def to_gdk_color(self):
+        """Converts the color to a Gdk.Color.
+
+        TODO: Deprecated, need to use Gdk.RGBA
+
+        Returns:
+            Gdk.Color: The Gdk color object.
+
+        """
         return Gdk.Color(*self.get_rgb_float())
 
     def _update_hsl(self, color):
+        """Update the HSL representation of the color.
+
+        Args:
+            color: The RGB color.
+
+        """
         r = color.red / float(65535)
         g = color.green / float(65535)
         b = color.blue / float(65535)
@@ -179,6 +278,9 @@ class HslColor(GObject.GObject):
         self._h = self._h / 6.0
 
     def _update_rgb(self):
+        """Update RGB representation of the color.
+
+        """
         if self._h > 1: self._h = 1
         if self._h < 0: self._h = 0
         if self._s > 1: self._s = 1

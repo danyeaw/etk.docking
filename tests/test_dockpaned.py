@@ -425,7 +425,7 @@ class TestDockPaned(unittest.TestCase):
         dockpaned.add(dockgroup1)
         dockpaned.add(dockgroup2)
 
-        self.assertTrue(dockpaned._get_n_handles() == 1)
+        self.assertTrue(dockpaned._get_num_handles() == 1)
 
         dockgroup2.destroy()
         dockgroup1.destroy()
